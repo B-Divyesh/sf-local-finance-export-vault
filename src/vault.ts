@@ -1,5 +1,5 @@
 import { strToU8, zipSync } from 'fflate';
-import { isValidIsoDate, makeDraft, normalizeRows, rowsToCsv } from './csv';
+import { csvEscape, isValidIsoDate, makeDraft, normalizeRows, rowsToCsv, safeSpreadsheetText } from './csv';
 import { SCHEMA_VERSION, neutralFields, type ArchiveDraft, type VaultArchive } from './types';
 
 const DB_NAME = 'local-finance-export-vault';
@@ -104,8 +104,10 @@ function mappingReport(archives: VaultArchive[]): string {
 
 function combinedCsv(rows: Array<Record<string, string | number>>): string {
   const fields = ['archiveId', ...neutralFields, 'sourceRow'];
-  const escape = (value: string | number) => /[",\n]/.test(String(value)) ? `"${String(value).replace(/"/g, '""')}"` : String(value);
-  return [fields.join(','), ...rows.map((row) => fields.map((field) => escape(row[field])).join(','))].join('\n');
+  return [fields.join(','), ...rows.map((row) => fields.map((field) => {
+    const value = row[field];
+    return csvEscape(field === 'amount' || field === 'sourceRow' ? value : safeSpreadsheetText(String(value)));
+  }).join(','))].join('\n');
 }
 
 function safeName(name: string): string {
@@ -163,13 +165,13 @@ export async function decryptPacket(envelopeBytes: Uint8Array, password: string)
   try {
     const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
     const key = await crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: base64ToBytes(envelope.salt), iterations: 250_000, hash: 'SHA-256' },
+      { name: 'PBKDF2', salt: base64ToBytes(envelope.salt) as BufferSource, iterations: 250_000, hash: 'SHA-256' },
       material,
       { name: 'AES-GCM', length: 256 },
       false,
       ['decrypt']
     );
-    return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(envelope.iv) }, key, base64ToBytes(envelope.data)));
+    return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: base64ToBytes(envelope.iv) as BufferSource }, key, base64ToBytes(envelope.data) as BufferSource));
   } catch {
     throw new Error('That password did not open this packet. Check the password and try again.');
   }

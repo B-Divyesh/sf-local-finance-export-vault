@@ -166,5 +166,12 @@ export function csvEscape(value: string | number): string {
 
 export function rowsToCsv(rows: NeutralRow[]): string {
   const headers = [...neutralFields, 'sourceRow'];
-  return [headers.join(','), ...rows.map((row) => headers.map((key) => csvEscape(row[key as keyof NeutralRow])).join(','))].join('\n');
+  return [headers.join(','), ...rows.map((row) => headers.map((key) => {
+    const value = row[key as keyof NeutralRow];
+    return csvEscape(key === 'amount' || key === 'sourceRow' ? value : safeSpreadsheetText(String(value)));
+  }).join(','))].join('\n');
+}
+
+export function safeSpreadsheetText(value: string): string {
+  return /^[=+@-]/.test(value) ? `'${value}` : value;
 }

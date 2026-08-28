@@ -217,6 +217,7 @@ function archiveCard(archive: VaultArchive, index: number): string {
         <div><h4>Validation</h4><ul>${validation.notices.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>
       </div>
       <div class="table-wrap"><table><caption>Field mapping for ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Neutral field</th><th scope="col">Original field</th></tr></thead><tbody>${neutralFields.map((field) => `<tr><th scope="row">${field}</th><td>${escapeHtml(archive.manifest.mapping[field] === '__flow__' ? 'Inflow minus outflow' : archive.manifest.mapping[field] || 'Not mapped')}</td></tr>`).join('')}</tbody></table></div>
+      <div class="table-wrap"><table class="row-preview"><caption>First ${Math.min(5, archive.rows.length)} neutral rows from ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Date</th><th scope="col">Payee</th><th scope="col">Category</th><th scope="col">Account</th><th scope="col">Amount</th></tr></thead><tbody>${archive.rows.slice(0, 5).map((row) => `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.payee || '—')}</td><td>${escapeHtml(row.category || '—')}</td><td>${escapeHtml(row.account || '—')}</td><td class="amount">${escapeHtml(row.amount)}</td></tr>`).join('')}</tbody></table></div>
       ${isDemo() ? '' : `<button class="text-button danger" type="button" data-action="remove" data-id="${escapeAttr(archive.id)}" data-name="${escapeAttr(archive.name)}">Remove this archive</button>`}
     </details>
   </article>`;

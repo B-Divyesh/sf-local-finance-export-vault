@@ -32,7 +32,7 @@ export function readLicenseState(): LicenseState {
   const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return { unlocked: false, checking: false, message: '' };
   const verdict = readVerdict();
-  if (!verdict) return { unlocked: true, checking: true, message: 'Checking this license…' };
+  if (!verdict) return { unlocked: false, checking: true, message: 'Checking this license…' };
   return verdict.valid
     ? { unlocked: true, checking: false, message: 'Unlimited archives are active.' }
     : { unlocked: false, checking: false, message: 'This license is no longer active.' };
@@ -50,7 +50,7 @@ export async function verifyLicense(force = false): Promise<LicenseState> {
     const verdict: Verdict = { valid: data.valid === true, reason: data.reason, checkedAt: Date.now() };
     localStorage.setItem(CACHE_KEY, JSON.stringify(verdict));
   } catch {
-    if (!prior) return { unlocked: true, checking: false, message: 'License check is offline. Using this license for now.' };
+    if (!prior) return { unlocked: false, checking: false, message: 'License check is offline. Connect once to verify this license.' };
   }
   return readLicenseState();
 }

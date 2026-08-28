@@ -1,0 +1,6 @@
+:root { color-scheme: dark; }
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; color: #f3e8cf; background: #10191a; font: 18px/1.55 system-ui, sans-serif; text-align: center; }
+main { max-width: 38rem; padding: 32px; border: 1px solid #e2ad4f; clip-path: polygon(24px 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 0 100%, 0 24px); }
+h1 { font: 700 48px/1 Georgia, serif; text-transform: uppercase; letter-spacing: .08em; }
+a { min-height: 44px; padding: 12px 16px; display: inline-flex; align-items: center; color: #10191a; background: #e2ad4f; font-weight: 700; }
+a:focus-visible { outline: 3px solid #7fc0a2; outline-offset: 4px; }
