@@ -1,0 +1,13 @@
+{
+  "slug": "local-finance-export-vault",
+  "title": "Local Finance Export Vault",
+  "territory": "utilities",
+  "user": "Privacy-minded individuals moving between budgeting tools who need to preserve and inspect their own financial exports before an app, pricing tier, or sync service changes.",
+  "smallest_useful_product": "Offline vault that imports common budget exports, snapshots an immutable manifest and hashes, maps fields into a documented neutral schema, and produces a readable migration packet.",
+  "success_measure": "A user can import two exports from different tools and produce a validated archive plus field-mapping report without any financial row leaving the device.",
+  "artifact_class": "pwa-offline",
+  "monetization": "one-time",
+  "constraints": "Encrypt local archive option; no credentials; transparent schema versioning; never claim regulatory-grade accounting or tax correctness.",
+  "state": "RESEARCHED",
+  "summary": "Preserve budget exports and make a clear migration packet on your device."
+}

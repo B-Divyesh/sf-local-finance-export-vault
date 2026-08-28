@@ -1,0 +1,7 @@
+{
+  "date": "2026-08-28",
+  "generator": "/opt/fleet/lib/gen-image.sh",
+  "deployment": "factory-image",
+  "use_case": "stylized-concept",
+  "prompt": "A monumental art-deco transit hall whose central destination is a secure archive vault; two modest document cases and neatly stacked paper ledgers travel on converging brass rails. A 1920s screen-printed railway poster with crisp stepped geometry, paper grain, midnight teal, aged cream, brass gold, coral, and muted jade. Symmetrical wide composition. No text, letters, numbers, logos, watermark, currency symbols, bank imagery, gradients, photorealism, people, hands, or UI screenshots."
+}
