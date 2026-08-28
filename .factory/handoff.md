@@ -1,32 +1,65 @@
-# Local Finance Export Vault — review 3 handoff
+# Local Finance Export Vault — polish 3 handoff
 
 ## Result
 
-Review 3 is **FAIL**. No product code was modified. The review and this
-handoff are the only repository changes.
+Release repair `62c4e882851ba96b3a480dd6f6b152a8b5a42fdf` is committed,
+pushed to `main`, and deployed to
+<https://local-finance-export-vault.sociobot.in>.
 
-The live product is clear on a cold phone/desktop read, demoable in one click,
-isolated from real data, and structurally sound. One earlier copy finding is
-still present: README calls the retained result both “standard rows” and
-“standardised data/rows.” Under the review contract this reopens F-2-4 as a
-blocking finding. See review-3.md for quotes and replacements.
+The one unresolved cumulative finding, F-2-4, is fixed: README now consistently
+calls the mapped result **standard rows**. A regression test prevents the old
+“standardised data/rows” wording from returning. Every prior finding was also
+rechecked as current behavior; the full map is in [polish-3.md](polish-3.md).
 
-## Verification
+## What changed
 
-- Fresh clone: /tmp/finance-vault-review-3.pqGdQr/repo; npm ci passed.
-- Every one of the 16 literal claim commands in claims.json passed
-  independently from that clone.
-- npm test passed: 8 unit tests and 29 Chromium tests.
-- npm run build passed and produced dist/. JavaScript: 49.78 kB raw / 18.23 kB
-  gzip; CSS: 18.17 kB raw / 4.86 kB gzip.
-- Cold live checks at 390 x 844 and 1440 x 900 confirmed the job, audience,
-  and first action before scrolling. The demo showed two named sample exports,
-  the isolation banner, Reset demo, and Open my vault.
-- Live route, metadata, link, focus/Back, request-log, mobile-target, and Axe
-  checks passed. A missing URL returned the designed static HTTP 404.
+- Rewrote the two README bullets to use `standard rows`.
+- Added a unit release test for the public terminology contract.
+- Updated the copy audit and the verb-first catalog description.
+- Preserved the existing night-transfer-office visual system, PWA/offline
+  behavior, separate demo sandbox, client-only archive storage, routing,
+  titles, legal pages, and designed HTTP 404.
 
-## Next step
+## How to run and verify
 
-Replace the two README phrases “standardised data” and “standardised rows” with
-“standard rows,” rerun the copy audit and npm test, then repeat the adversarial
-review for a zero-findings result.
+```bash
+npm ci
+npm test
+npm run build
+npm run preview
+```
+
+Open <http://localhost:4173/> or the isolated demo at
+<http://localhost:4173/?demo=1>. The query alias normalizes to `/demo`, shows
+two bundled samples, and never reads or writes the real vault.
+
+For claim verification, run every literal `test` command in
+`.factory/claims.json`. All 16 were run independently from clean clone
+`/tmp/local-finance-export-vault-clean.IlbXlh/repo` at this commit, after
+`npm ci`, and all passed.
+
+## Evidence
+
+- `npm test`: pass — 9 unit tests and 29 Chromium tests, including browser,
+  accessibility/Axe, keyboard, privacy, demo isolation, history focus/scroll,
+  mobile-target, encryption, checkout, and offline tests.
+- `npm run lint`, `npm run typecheck`, and `npm run build`: pass. `dist/` was
+  produced with 49.78 kB raw / 18.23 kB gzip JavaScript and 18.17 kB raw /
+  4.86 kB gzip CSS.
+- Live verifier: [report](polish-3-assets/verify-live/verify.json) — title,
+  lang, one H1, main, alt text, named buttons, and no console errors.
+- Live Lighthouse: [report](polish-3-assets/lighthouse-live.json) — 100
+  Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1,507 ms,
+  CLS 0.
+- Cold live evidence: [home](polish-3-assets/live-home-390.png),
+  [demo](polish-3-assets/live-demo-390.png), and
+  [HTTP 404](polish-3-assets/live-404-390.png).
+- Production command: `swa deploy dist --env production --app-name
+  sf-local-finance-export-vault --resource-group sociobot --no-use-keychain`;
+  then a cold browser check of `/`, `/?demo=1`, `/vault`, `/privacy`, `/terms`,
+  and `/missing-platform`.
+
+## Known gaps / next steps
+
+None. The product remains a static offline PWA; no server, analytics,
+third-party fonts, or runtime AI feature was added.
