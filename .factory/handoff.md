@@ -1,4 +1,17 @@
-# Verification addendum — PASS (2026-08-28 UTC)
+# Review handoff — FAIL (2026-08-28 UTC)
+
+The current independent adversarial review is [review-1.md](review-1.md).
+No product code was changed for this work order.
+
+- Live cold-read, demo, isolation, offline, link, route, and 404 checks ran at 390 × 844 and 1440 × 900.
+- A fresh clone passed npm ci, all 13 literal claims commands, npm test, and npm run build.
+- Result: FAIL. Remaining findings are the incomplete claim inventory, unclear copy, and a static 404 without the standard skeleton/metadata.
+
+After repairs, rerun every command in .factory/claims.json, npm test, npm run build, a fresh offline /demo check, and a direct missing-route request.
+
+---
+
+# Previous verification addendum — PASS (2026-08-28 UTC)
 
 Independent QA of candidate `94769ecfc814364943ace93ae1e247d089c6cd1d` at
 <https://local-finance-export-vault.sociobot.in> passed. This replaces the
