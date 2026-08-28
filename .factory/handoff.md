@@ -61,8 +61,8 @@ Clean release matrix on 2026-08-28 UTC:
   cleanup, and immutable response rules.
 - Local Lighthouse: Performance 100, Accessibility 100, Best Practices 100,
   SEO 100; LCP 1.8 s, CLS 0, TBT 0 ms, total transfer 128 KiB.
-- Production bundle: JavaScript 47,398 bytes raw / 17,469 bytes gzip; CSS
-  17,402 bytes raw / 4,696 bytes gzip; hero WebP 84,800 bytes.
+- Production bundle: JavaScript 47,398 bytes raw / 17,468 bytes gzip; CSS
+  18,071 bytes raw / 4,851 bytes gzip; hero WebP 84,800 bytes.
 - Local URL verification: title, `lang`, one `h1`, `main`, alt text, button
   names, and console checks passed in 563 ms.
 - Visual evidence:
@@ -83,14 +83,14 @@ jq -r '.[].test' .factory/claims.json
 ## Deployment and live checks
 
 Azure Static Web Apps deployment
-`e1c7f048-b1b3-44bc-bfc1-4650d1bf6cd6` succeeded from `dist/`. The custom
+`1e6b664f-3d13-4c82-a8ff-5413b8b098f7` succeeded from `dist/`. The custom
 domain is Ready with managed TLS.
 
 - Live `index.html` SHA-256 is
-  `7cbff0fa03b300225f35c8ab22af7a13456d513ee23410a83a0cfdf1a06b71f8`,
+  `8e88303a28c0b0ebf3b1a9410c8c29201089fe062312ffec85dde3472f1470f6`,
   byte-for-byte equal to the built file.
 - Live `sw.js` SHA-256 is
-  `a5bfe52a2a73c060db5e879ef803417784765b8e61b04ee9aa18d837232e76d4`,
+  `78b4303235c364e757e7384b3e9fa982299f238f0c6b16ec8ddf402276c08377`,
   byte-for-byte equal to the built worker and different from the failed
   candidate worker.
 - `/`, `/demo`, `/vault`, `/privacy`, and `/terms` return HTTP 200.
@@ -102,15 +102,16 @@ domain is Ready with managed TLS.
   URL. Checkout returns HTTP 303 to `checkout.dodopayments.com`; invalid
   license verification returns `{valid:false, reason:"invalid"}`.
 - `https://sociobot.in` returns HTTP 200 with valid TLS.
-- Live URL verification passed in 927 ms with no console errors, one `h1`, one
+- Live URL verification passed in 681 ms with no console errors, one `h1`, one
   `main`, correct title/language, image alt text, and named buttons.
 - Live Playwright Axe checks at desktop and 390 px found zero serious or
   critical findings on home, demo, privacy, and terms. There was no horizontal
-  overflow, console error, or cross-origin request during demo use.
+  overflow, console error, or cross-origin request during demo use. Both
+  packet and encryption checkboxes measure 44 × 44 CSS px at 390 px.
 - A controlled live browser loaded `/demo`, installed the service worker, went
   offline, and reloaded with two sample archives plus `Offline — ready`.
 - Live Lighthouse: Performance 100, Accessibility 100, Best Practices 100,
-  SEO 100; LCP 1.4 s, CLS 0, TBT 0 ms, total transfer 128 KiB. Report:
+  SEO 100; LCP 1.5 s, CLS 0, TBT 0 ms, total transfer 128 KiB. Report:
   `.factory/repair-assets/lighthouse-live.json`.
 
 ## Known gaps
