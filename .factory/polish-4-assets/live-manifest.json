@@ -1,0 +1,16 @@
+{
+  "name": "Local Finance Export Vault",
+  "short_name": "Export Vault",
+  "description": "Preserve budget exports and make a migration packet on your device.",
+  "id": "/",
+  "start_url": "/?v=1",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#10191a",
+  "theme_color": "#10191a",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
