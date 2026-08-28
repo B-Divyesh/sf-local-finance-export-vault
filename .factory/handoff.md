@@ -82,8 +82,36 @@ jq -r '.[].test' .factory/claims.json
 
 ## Deployment and live checks
 
-The static production deployment and post-deploy response checks are recorded
-below after the committed build is uploaded.
+Azure Static Web Apps deployment
+`e1c7f048-b1b3-44bc-bfc1-4650d1bf6cd6` succeeded from `dist/`. The custom
+domain is Ready with managed TLS.
+
+- Live `index.html` SHA-256 is
+  `7cbff0fa03b300225f35c8ab22af7a13456d513ee23410a83a0cfdf1a06b71f8`,
+  byte-for-byte equal to the built file.
+- Live `sw.js` SHA-256 is
+  `a5bfe52a2a73c060db5e879ef803417784765b8e61b04ee9aa18d837232e76d4`,
+  byte-for-byte equal to the built worker and different from the failed
+  candidate worker.
+- `/`, `/demo`, `/vault`, `/privacy`, and `/terms` return HTTP 200.
+  `/missing-platform` returns HTTP 404 with the designed not-found title.
+- JavaScript, CSS, hero art, SVG/PNG icons, the touch icon, and the social card
+  return `Cache-Control: public, max-age=31536000, immutable`.
+- CSP, `nosniff`, no-referrer, and restrictive permissions headers are live.
+- The billing catalog reports the correct slug, $12 USD price, and product
+  URL. Checkout returns HTTP 303 to `checkout.dodopayments.com`; invalid
+  license verification returns `{valid:false, reason:"invalid"}`.
+- `https://sociobot.in` returns HTTP 200 with valid TLS.
+- Live URL verification passed in 927 ms with no console errors, one `h1`, one
+  `main`, correct title/language, image alt text, and named buttons.
+- Live Playwright Axe checks at desktop and 390 px found zero serious or
+  critical findings on home, demo, privacy, and terms. There was no horizontal
+  overflow, console error, or cross-origin request during demo use.
+- A controlled live browser loaded `/demo`, installed the service worker, went
+  offline, and reloaded with two sample archives plus `Offline — ready`.
+- Live Lighthouse: Performance 100, Accessibility 100, Best Practices 100,
+  SEO 100; LCP 1.4 s, CLS 0, TBT 0 ms, total transfer 128 KiB. Report:
+  `.factory/repair-assets/lighthouse-live.json`.
 
 ## Known gaps
 
