@@ -22,14 +22,14 @@
   },
   {
     "id": "packet-contents",
-    "claim": "The migration packet includes originals, neutral rows, a manifest, hashes, and a field-mapping report.",
+    "claim": "The migration packet includes original files, standard rows, field matches, and tamper-check codes.",
     "where": "packet maker and README",
     "test": "npm test -- --grep @claim:packet-contents",
     "sandbox": "demo data; download and inspect the ZIP and manifest"
   },
   {
     "id": "hash-manifest",
-    "claim": "Each archive records SHA-256 hashes for the original and neutral data.",
+    "claim": "Each archive records SHA-256 tamper-check codes for the original file and standard rows.",
     "where": "archive details and README",
     "test": "npm test -- --grep @claim:hash-manifest",
     "sandbox": "demo data; inspect two 64-character hashes in one manifest"
@@ -43,7 +43,7 @@
   },
   {
     "id": "common-imports",
-    "claim": "The vault imports YNAB, Monarch, Actual, and generic budget CSV shapes.",
+    "claim": "The vault imports YNAB, Monarch, and Actual CSV files, plus files with common date and amount columns.",
     "where": "how it works and README",
     "test": "npm test -- --grep @claim:common-imports",
     "sandbox": "fresh real vault; upload and seal an Actual-shaped CSV while demo covers YNAB and Monarch"
@@ -53,7 +53,7 @@
     "claim": "You can review and change each export field before saving an archive.",
     "where": "landing archive start and README",
     "test": "npm test -- --grep @claim:field-review",
-    "sandbox": "fresh real vault; upload a CSV, change its category mapping, seal it, and inspect the saved field map"
+    "sandbox": "fresh real vault; upload a CSV, change its category match, seal it, and inspect the saved field matches"
   },
   {
     "id": "validation",
@@ -102,7 +102,7 @@
     "claim": "The $12 purchase link opens Sociobot's hosted checkout.",
     "where": "paid ticket, terms, and README",
     "test": "npm test -- --grep @claim:billing-checkout",
-    "sandbox": "fresh browser context; inspect the paid ticket's exact Sociobot checkout URL and its $12 one-time label"
+    "sandbox": "fresh browser context; request the exact Sociobot checkout URL, assert its 303 redirect to the allow-listed Dodo checkout host, and assert the hosted page is reachable"
   },
   {
     "id": "offline-reload",

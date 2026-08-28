@@ -52,26 +52,44 @@ test('restores useful keyboard focus after import and seal rerenders', async ({ 
   await expect(page.getByRole('heading', { name: 'focus.csv' })).toBeFocused();
 });
 
-test('mobile navigation, demo controls, and footer links have 44px targets', async ({ page }) => {
+test('every visible mobile control has a 44px target on every route', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto('/demo');
-  const targets = [
-    page.getByRole('link', { name: 'Local Finance Export Vault home' }),
-    page.getByRole('link', { name: 'Demo' }).first(),
-    page.getByRole('link', { name: 'Vault' }).first(),
-    page.getByRole('link', { name: 'Privacy' }).first(),
-    page.getByRole('button', { name: 'Reset demo' }),
-    page.getByRole('link', { name: 'Open my empty vault' }),
-    page.getByRole('link', { name: 'Terms' }),
-    page.getByLabel('Include household-ynab.csv in packet'),
-    page.getByLabel('Encrypt with a password')
-  ];
-  for (const target of targets) {
-    const box = await target.boundingBox();
-    expect(box).not.toBeNull();
-    expect(box!.width).toBeGreaterThanOrEqual(44);
-    expect(box!.height).toBeGreaterThanOrEqual(44);
+  for (const route of ['/', '/demo', '/vault', '/privacy', '/terms']) {
+    await page.goto(route);
+    const misses = await page.locator('a, button, input, select, summary').evaluateAll((elements) => elements.flatMap((element) => {
+      const node = element as HTMLElement;
+      const style = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      const hidden = style.display === 'none' || style.visibility === 'hidden' || Number(style.opacity) === 0 || rect.width === 0 || rect.height === 0;
+      if (hidden) return [];
+      return rect.width + 0.01 < 44 || rect.height + 0.01 < 44
+        ? [`${node.tagName.toLowerCase()} ${node.getAttribute('href') ?? node.textContent?.trim() ?? node.id}: ${rect.width.toFixed(2)}×${rect.height.toFixed(2)}`]
+        : [];
+    }));
+    expect(misses, `${route} has undersized targets`).toEqual([]);
   }
+});
+
+test('Back and Forward restore route scroll and focus', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/');
+  const privacyLink = page.locator('[data-history-focus="footer-privacy"]');
+  await privacyLink.scrollIntoViewIfNeeded();
+  await privacyLink.focus();
+  const homeScroll = await page.evaluate(() => scrollY);
+  expect(homeScroll).toBeGreaterThan(1000);
+  await privacyLink.click();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await expect(page.locator('#privacy-title')).toBeFocused();
+  await page.goBack();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(privacyLink).toBeFocused();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(homeScroll);
+  await page.goForward();
+  await expect(page).toHaveURL(/\/privacy$/);
+  await expect(page.locator('#privacy-title')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
 });
 
 test('footer uses the valid Sociobot hostname', async ({ page }) => {

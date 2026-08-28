@@ -18,27 +18,30 @@ numbers as one word. No sentence exceeds 22 words. No banned word appears.
 | Runs offline after the first visit. | 6 | Claim: offline-reload |
 | Financial rows stay in this browser. | 6 | Claim: local-only |
 | Free for two archives. $12 once for unlimited archives. | 9 | Claim: free-tier |
-| Original poster art: your exports travel to one neutral archive. | 10 | Art caption |
+| Original poster art: two budget exports travel into one archive. | 10 | Art caption |
+| Platform 01 | 2 | Decorative step label |
 | Start your archive | 3 | Pass |
-| Choose a budget CSV. Review each archive field before you save it. | 12 | Claim: field-review |
+| Choose a budget CSV. Review each field before you save it. | 11 | Claim: field-review |
 | No sealed archives yet | 4 | Pass |
 | Your checked exports will appear here. | 6 | Pass |
 | Choose CSV files | 3 | Pass |
 | Your archive desk is empty | 5 | Pass |
 | Choose a CSV to start its field review. | 9 | Instruction |
+| Route map | 2 | Decorative section label |
 | How your files move | 4 | Pass |
 | Choose exports | 2 | Pass |
 | Add CSV files from YNAB, Monarch, Actual, or another budget tool. | 11 | Claim: common-imports |
-| Review the map | 3 | Pass |
+| Review field matches | 3 | Pass |
 | Match each export column to the standard fields in your archive. | 11 | Claim: field-review |
-| Make a packet | 3 | Pass |
+| Download a migration packet | 4 | Pass |
 | Download original files, tamper-check codes, row checks, and standard rows together. | 11 | Claim: packet-contents |
+| Scope | 1 | Decorative section label |
 | What the vault does not do | 6 | Pass |
 | The vault does not connect to banks or change your original files. | 12 | Claim: scope-limits |
 | Use it to document portability, not to certify accounting or tax work. | 12 | Limitation |
 | Unlimited archive storage | 3 | Pass |
 | Keep more than two archives | 5 | Pass |
-| The free vault stores two archives and makes complete packets. | 10 | Claim: free-tier |
+| The free vault stores two archives and makes complete migration packets. | 11 | Claim: free-tier |
 | $12 one-time purchase | 3 | Claim: free-tier |
 | Unlimited saved archives on this device. | 6 | Claim: free-tier |
 | Buy unlimited archives | 3 | Claim: billing-checkout |
@@ -55,9 +58,9 @@ numbers as one word. No sentence exceeds 22 words. No banned word appears.
 
 | Concept | One term used |
 | --- | --- |
-| Original vendor file stored with its manifest | archive |
+| Imported source file and its saved record | export / archive |
 | Download containing one or more archives | migration packet |
-| Standard destination fields | standard archive fields |
-| Original-to-standard column choices | field map |
+| Standard destination fields and mapped values | standard fields / standard rows |
+| Original-to-standard column choices | field matches |
 | Non-persistent sample environment | demo |
 | Completed immutable archive snapshot | sealed archive |

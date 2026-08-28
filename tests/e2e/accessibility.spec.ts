@@ -17,12 +17,12 @@ test('routes update title and focus without console errors', async ({ page }) =>
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
   page.on('pageerror', (exception) => errors.push(exception.message));
   await page.goto('/');
-  await expect(page).toHaveTitle('Finance Export Vault — preserve budget exports');
+  await expect(page).toHaveTitle('Local Finance Export Vault — preserve budget exports');
   await page.getByRole('link', { name: 'Demo' }).first().click();
   await expect(page).toHaveURL(/\/demo$/);
   await expect(page.locator('h1')).toBeFocused();
   await page.goBack();
-  await expect(page).toHaveTitle('Finance Export Vault — preserve budget exports');
+  await expect(page).toHaveTitle('Local Finance Export Vault — preserve budget exports');
   await page.goto('/missing-platform');
   await expect(page).toHaveTitle('Not found — Local Finance Export Vault');
   await expect(page.getByRole('link', { name: 'Return to the vault' })).toBeVisible();

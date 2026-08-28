@@ -15,9 +15,21 @@ let error = '';
 let online = navigator.onLine;
 let updateWaiting: ServiceWorker | null = null;
 let licenseState: LicenseState = { unlocked: false, checking: false, message: '' };
+let restoringHistory = false;
+let scrollSaveFrame = 0;
+
+interface RouteView {
+  scrollX: number;
+  scrollY: number;
+  focusKey: string | null;
+}
+
+interface RouteState {
+  view?: RouteView;
+}
 
 const routeTitles: Record<string, string> = {
-  '/': 'Finance Export Vault — preserve budget exports',
+  '/': 'Local Finance Export Vault — preserve budget exports',
   '/demo': 'Demo — Local Finance Export Vault',
   '/vault': 'Vault — Local Finance Export Vault',
   '/privacy': 'Privacy — Local Finance Export Vault',
@@ -36,6 +48,7 @@ const routeDescriptions: Record<string, string> = {
 void start();
 
 async function start(): Promise<void> {
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
   if (location.pathname === '/' && new URLSearchParams(location.search).get('demo') === '1') {
     history.replaceState({}, '', '/demo');
   }
@@ -48,6 +61,7 @@ async function start(): Promise<void> {
     render();
   }
   bindGlobalEvents();
+  saveCurrentView();
   registerServiceWorker();
 }
 
@@ -107,16 +121,16 @@ function shell(content: string, demo: boolean): string {
         <span>Export<br>Vault</span>
       </a>
       <nav aria-label="Primary navigation">
-        <a href="/demo" data-link ${normalPath() === '/demo' ? 'aria-current="page"' : ''}>Demo</a>
-        <a href="/vault" data-link ${normalPath() === '/vault' ? 'aria-current="page"' : ''}>Vault</a>
-        <a href="/privacy" data-link ${normalPath() === '/privacy' ? 'aria-current="page"' : ''}>Privacy</a>
+        <a href="/demo" data-link data-history-focus="header-demo" ${normalPath() === '/demo' ? 'aria-current="page"' : ''}>Demo</a>
+        <a href="/vault" data-link data-history-focus="header-vault" ${normalPath() === '/vault' ? 'aria-current="page"' : ''}>Vault</a>
+        <a href="/privacy" data-link data-history-focus="header-privacy" ${normalPath() === '/privacy' ? 'aria-current="page"' : ''}>Privacy</a>
       </nav>
       <span class="network-state ${online ? '' : 'offline'}" role="status">${online ? 'On device' : 'Offline — ready'}</span>
     </header>
     ${content}
     <footer class="site-footer">
       <p>Preserve budget exports on your device.</p>
-      <nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in" rel="external">Built by Param Factory <span class="sr-only">(external site)</span></a></nav>
+      <nav aria-label="Footer navigation"><a href="/privacy" data-link data-history-focus="footer-privacy">Privacy</a><a href="/terms" data-link data-history-focus="footer-terms">Terms</a><a href="https://sociobot.in" rel="external">Built by Param Factory <span class="sr-only">(external site)</span></a></nav>
       <p class="build">Version 1.0 · Schema ${SCHEMA_VERSION} · Hero art generated for this product.</p>
     </footer>
     ${updateWaiting ? '<div class="toast" role="status">A new version is ready. <button type="button" data-action="update">Update now</button></div>' : ''}
@@ -124,7 +138,7 @@ function shell(content: string, demo: boolean): string {
 }
 
 function demoBanner(): string {
-  return `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span><button type="button" data-action="reset-demo">Reset demo</button><a href="/vault" data-link>Open my empty vault</a></span></aside>`;
+  return `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span><button type="button" data-action="reset-demo">Reset demo</button><a href="/vault" data-link>Open my vault</a></span></aside>`;
 }
 
 function homePage(): string {
@@ -132,7 +146,7 @@ function homePage(): string {
     <section class="hero poster-section" aria-labelledby="home-title">
       <div class="hero-copy">
         <p class="eyebrow">A private transfer desk for your data</p>
-        <h1 id="home-title" tabindex="-1">Preserve your budget exports before you switch</h1>
+        <h1 id="home-title" data-history-focus="page-title" tabindex="-1">Preserve your budget exports before you switch</h1>
         <p class="lede">For people changing budget apps who need a checked archive they can understand later.</p>
         <div class="hero-action"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>Loads two realistic exports in a separate demo.</span></div>
         <ul class="plain-facts" aria-label="Product facts">
@@ -143,19 +157,19 @@ function homePage(): string {
       </div>
       <figure class="hero-art">
         <img src="/art/vault-transfer.webp" width="1200" height="800" alt="An art-deco station vault receives document cases on three brass rails." fetchpriority="high" decoding="async">
-        <figcaption>Original poster art: your exports travel to one neutral archive.</figcaption>
+        <figcaption>Original poster art: two budget exports travel into one archive.</figcaption>
       </figure>
     </section>
     <section class="workspace-section" aria-labelledby="workspace-title">
-      <div class="section-heading"><p class="platform-number">Platform 01</p><h2 id="workspace-title">Start your archive</h2><p>Choose a budget CSV. Review each archive field before you save it.</p></div>
+      <div class="section-heading"><p class="platform-number">Platform 01</p><h2 id="workspace-title">Start your archive</h2><p>Choose a budget CSV. Review each field before you save it.</p></div>
       ${workspace()}
     </section>
     <section class="how-section" aria-labelledby="how-title">
       <div class="section-heading"><p class="platform-number">Route map</p><h2 id="how-title">How your files move</h2></div>
       <ol class="route-steps">
         <li><span>1</span><div><h3>Choose exports</h3><p>Add CSV files from YNAB, Monarch, Actual, or another budget tool.</p></div></li>
-        <li><span>2</span><div><h3>Review the map</h3><p>Match each export column to the standard fields in your archive.</p></div></li>
-        <li><span>3</span><div><h3>Make a packet</h3><p>Download original files, tamper-check codes, row checks, and standard rows together.</p></div></li>
+        <li><span>2</span><div><h3>Review field matches</h3><p>Match each export column to the standard fields in your archive.</p></div></li>
+        <li><span>3</span><div><h3>Download a migration packet</h3><p>Download original files, tamper-check codes, row checks, and standard rows together.</p></div></li>
       </ol>
     </section>
     <section class="limits-section" aria-labelledby="limits-title">
@@ -170,8 +184,8 @@ function vaultPage(demo: boolean): string {
   return `<main id="main" class="vault-page" tabindex="-1">
     <section class="vault-intro">
       <p class="eyebrow">${demo ? 'Sample transfer desk' : 'Your local transfer desk'}</p>
-      <h1 tabindex="-1">${demo ? 'Review two sample budget exports' : 'Build your private migration packet'}</h1>
-      <p>${demo ? 'Inspect both mappings, then download a sample packet. The demo never reads or saves your files.' : 'Import exports, review their meaning, and keep a portable record.'}</p>
+      <h1 data-history-focus="page-title" tabindex="-1">${demo ? 'Review two sample budget exports' : 'Build your private migration packet'}</h1>
+      <p>${demo ? 'Inspect both field matches, then download a sample migration packet. The demo never reads or saves your files.' : 'Import exports, review their meaning, and keep a portable record.'}</p>
     </section>
     <h2 class="sr-only">Archive workspace</h2>
     ${workspace()}
@@ -221,7 +235,7 @@ function draftCard(draft: ArchiveDraft, index: number): string {
 }
 
 function archiveList(): string {
-  return `<div class="archive-list"><div class="rail-label"><span>Sealed</span><span>SHA-256 manifests</span></div>${archives.map((archive, index) => isLockedArchive(archive) ? lockedArchiveCard(archive, index) : archiveCard(archive, index)).join('')}</div>`;
+  return `<div class="archive-list"><div class="rail-label"><span>Sealed</span><span>Tamper checks</span></div>${archives.map((archive, index) => isLockedArchive(archive) ? lockedArchiveCard(archive, index) : archiveCard(archive, index)).join('')}</div>`;
 }
 
 function archiveCard(archive: VaultArchive, index: number): string {
@@ -235,13 +249,13 @@ function archiveCard(archive: VaultArchive, index: number): string {
       <span class="stamp ${valid ? 'valid' : 'warning'}">${valid ? 'Checked' : `${validation.invalidRows} to review`}</span>
     </div>
     <details>
-      <summary>Inspect manifest and field map</summary>
+      <summary>Inspect archive details and field matches</summary>
       <div class="manifest-grid">
-        <div><h4>Integrity</h4><dl><dt>Original SHA-256</dt><dd><code>${archive.manifest.originalFile.sha256}</code></dd><dt>Neutral SHA-256</dt><dd><code>${archive.manifest.normalized.sha256}</code></dd><dt>Created</dt><dd>${formatDate(archive.createdAt)}</dd></dl></div>
+        <div><h4>Tamper checks</h4><dl><dt>Original file code</dt><dd><code>${archive.manifest.originalFile.sha256}</code></dd><dt>Standard rows code</dt><dd><code>${archive.manifest.normalized.sha256}</code></dd><dt>Created</dt><dd>${formatDate(archive.createdAt)}</dd></dl></div>
         <div><h4>Validation</h4><ul>${validation.notices.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul></div>
       </div>
-      <div class="table-wrap"><table><caption>Field mapping for ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Neutral field</th><th scope="col">Original field</th></tr></thead><tbody>${neutralFields.map((field) => `<tr><th scope="row">${field}</th><td>${escapeHtml(archive.manifest.mapping[field] === '__flow__' ? 'Inflow minus outflow' : archive.manifest.mapping[field] || 'Not mapped')}</td></tr>`).join('')}</tbody></table></div>
-      <div class="table-wrap"><table class="row-preview"><caption>First ${Math.min(5, archive.rows.length)} neutral rows from ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Date</th><th scope="col">Payee</th><th scope="col">Category</th><th scope="col">Account</th><th scope="col">Amount</th></tr></thead><tbody>${archive.rows.slice(0, 5).map((row) => `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.payee || '—')}</td><td>${escapeHtml(row.category || '—')}</td><td>${escapeHtml(row.account || '—')}</td><td class="amount">${escapeHtml(row.amount)}</td></tr>`).join('')}</tbody></table></div>
+      <div class="table-wrap"><table><caption>Field matches for ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Standard field</th><th scope="col">Original field</th></tr></thead><tbody>${neutralFields.map((field) => `<tr><th scope="row">${field}</th><td>${escapeHtml(archive.manifest.mapping[field] === '__flow__' ? 'Inflow minus outflow' : archive.manifest.mapping[field] || 'Not mapped')}</td></tr>`).join('')}</tbody></table></div>
+      <div class="table-wrap"><table class="row-preview"><caption>First ${Math.min(5, archive.rows.length)} standard rows from ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Date</th><th scope="col">Payee</th><th scope="col">Category</th><th scope="col">Account</th><th scope="col">Amount</th></tr></thead><tbody>${archive.rows.slice(0, 5).map((row) => `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.payee || '—')}</td><td>${escapeHtml(row.category || '—')}</td><td>${escapeHtml(row.account || '—')}</td><td class="amount">${escapeHtml(row.amount)}</td></tr>`).join('')}</tbody></table></div>
       ${isDemo() ? '' : `<button class="text-button danger" type="button" data-action="remove" data-id="${escapeAttr(archive.id)}" data-name="${escapeAttr(archive.name)}">Remove this archive</button>`}
     </details>
   </article>`;
@@ -265,7 +279,7 @@ function lockedArchiveCard(archive: Extract<VaultItem, { locked: true }>, index:
 
 function packetMaker(): string {
   return `<section class="packet-maker" aria-labelledby="packet-title">
-    <div><p class="platform-number">Final stop</p><h3 id="packet-title">Make the migration packet</h3><p>The ZIP includes originals, neutral rows, a manifest, hashes, and the field-mapping report.</p></div>
+    <div><p class="platform-number">Final stop</p><h3 id="packet-title">Make the migration packet</h3><p>The ZIP includes original files, standard rows, field matches, and tamper-check codes.</p></div>
     <form id="packet-form">
       <label class="toggle"><input type="checkbox" id="encrypt-packet"><span>Encrypt with a password</span></label>
       <div id="password-field" hidden><label for="packet-password">Archive password</label><input id="packet-password" type="password" minlength="8" autocomplete="new-password" aria-describedby="password-help"><small id="password-help">Use at least 8 characters. The password cannot be recovered.</small></div>
@@ -277,7 +291,7 @@ function packetMaker(): string {
 
 function paidSection(): string {
   return `<section class="paid-section" aria-labelledby="paid-title">
-    <div><p class="platform-number">Unlimited archive storage</p><h2 id="paid-title">Keep more than two archives</h2><p>The free vault stores two archives and makes complete packets.</p></div>
+    <div><p class="platform-number">Unlimited archive storage</p><h2 id="paid-title">Keep more than two archives</h2><p>The free vault stores two archives and makes complete migration packets.</p></div>
     <div class="paid-ticket">
       <p class="price"><strong>$12</strong> one-time purchase</p>
       <p>Unlimited saved archives on this device.</p>
@@ -290,19 +304,21 @@ function paidSection(): string {
 }
 
 function privacyPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">The short version</p><h1 tabindex="-1">Your financial rows stay on your device</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the vault stores</h2><p>Your imported files, field maps, hashes, and normalized rows are stored in this browser with IndexedDB.</p><p>You can encrypt each saved archive with a password. Its file name and financial rows then remain encrypted in IndexedDB.</p><p>Demo data stays in memory and is discarded when you leave or reset the demo.</p></section><section><h2>What leaves the device</h2><p>Archive data is not sent to us. The tested app contains no analytics, ads, bank connection, or tracking script.</p><p>If you verify a paid license, only the license token goes to the Sociobot billing API. Financial rows are never included.</p></section><section><h2>Your controls</h2><p>You can download each migration packet and remove saved archives. Clearing this site's browser data also removes them.</p></section><section><h2>Contact</h2><p>For privacy questions, email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">The short version</p><h1 id="privacy-title" data-history-focus="page-title" tabindex="-1">Your financial rows stay on your device</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the vault stores</h2><p>Your exports, field matches, tamper-check codes, and standard rows are stored in this browser.</p><p>You can encrypt each saved archive with a password. Its file name and financial rows then remain encrypted in browser storage.</p><p>Demo data stays in memory and is discarded when you leave or reset the demo.</p></section><section><h2>What leaves the device</h2><p>Archive data is not sent to us. The tested app contains no analytics, ads, bank connection, or tracking script.</p><p>If you verify a paid license, only the license token goes to the Sociobot billing API. Financial rows are never included.</p></section><section><h2>Your controls</h2><p>You can download each migration packet and remove saved archives. Clearing this site's browser data also removes them.</p></section><section><h2>Contact</h2><p>For privacy questions, email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p></section></main>`;
 }
 
 function termsPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into standard archive fields. It also records hashes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field map and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. The Buy unlimited archives link opens Sociobot's hosted checkout.</p><p>For payment and refund terms, use the terms shown at checkout. A refunded or disputed license may stop verifying.</p><p>The free vault still stores two archives and makes packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 id="terms-title" data-history-focus="page-title" tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into standard fields. It also records tamper-check codes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field matches and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. The Buy unlimited archives link opens Sociobot's hosted checkout.</p><p>For payment and refund terms, use the terms shown at checkout. A refunded or disputed license may stop verifying.</p><p>The free vault still stores two archives and makes migration packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
 }
 
 function notFoundPage(): string {
-  return `<main id="main" class="not-found"><p class="eyebrow">No service here</p><h1 tabindex="-1">Page not found</h1><p>The address does not point to an archive desk.</p><a class="button primary" href="/" data-link>Return to the vault</a></main>`;
+  return `<main id="main" class="not-found"><p class="eyebrow">No service here</p><h1 data-history-focus="page-title" tabindex="-1">Page not found</h1><p>The address does not point to an archive desk.</p><a class="button primary" href="/" data-link>Return to the vault</a></main>`;
 }
 
 function bindGlobalEvents(): void {
-  addEventListener('popstate', () => { void routeChanged(); });
+  addEventListener('popstate', (event) => { void routeChanged(true, (event as PopStateEvent).state as RouteState | null); });
+  addEventListener('scroll', scheduleViewSave, { passive: true });
+  document.addEventListener('focusin', scheduleViewSave);
   addEventListener('online', () => { online = true; render(); });
   addEventListener('offline', () => { online = false; render(); });
   document.querySelector<HTMLAnchorElement>('.skip-link')?.addEventListener('click', (event) => {
@@ -493,18 +509,51 @@ async function openEncryptedPacket(): Promise<void> {
 }
 
 function navigate(path: string): void {
-  history.pushState({}, '', path);
-  void routeChanged();
+  saveCurrentView();
+  history.pushState({ view: { scrollX: 0, scrollY: 0, focusKey: null } } satisfies RouteState, '', path);
+  void routeChanged(false);
 }
 
-async function routeChanged(): Promise<void> {
+async function routeChanged(fromHistory = false, state: RouteState | null = null): Promise<void> {
+  restoringHistory = fromHistory;
   drafts = []; notice = ''; error = '';
   await loadRouteData();
   render();
-  const heading = document.querySelector<HTMLElement>('h1');
-  heading?.focus();
   routeStatus.textContent = document.title;
+  if (fromHistory) {
+    await nextPaint();
+    const view = state?.view ?? { scrollX: 0, scrollY: 0, focusKey: null };
+    scrollTo({ left: view.scrollX, top: view.scrollY, behavior: 'auto' });
+    if (view.focusKey) {
+      document.querySelector<HTMLElement>(`[data-history-focus="${CSS.escape(view.focusKey)}"]`)?.focus({ preventScroll: true });
+    }
+    restoringHistory = false;
+    saveCurrentView();
+    return;
+  }
   scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  document.querySelector<HTMLElement>('h1')?.focus({ preventScroll: true });
+  saveCurrentView();
+}
+
+function scheduleViewSave(): void {
+  if (restoringHistory || scrollSaveFrame) return;
+  scrollSaveFrame = requestAnimationFrame(() => {
+    scrollSaveFrame = 0;
+    saveCurrentView();
+  });
+}
+
+function saveCurrentView(): void {
+  if (restoringHistory) return;
+  const focused = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  const focusKey = focused?.dataset.historyFocus ?? null;
+  const state = (history.state && typeof history.state === 'object' ? history.state : {}) as RouteState;
+  history.replaceState({ ...state, view: { scrollX, scrollY, focusKey } }, '');
+}
+
+function nextPaint(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 }
 
 function normalPath(): string {

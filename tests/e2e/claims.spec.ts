@@ -16,7 +16,7 @@ test('@claim:local-only sends no financial rows away', async ({ page }) => {
     if (url.origin !== 'http://127.0.0.1:4173') outside.push(request.url());
   });
   await page.goto('/demo');
-  await page.getByText('Inspect manifest and field map').first().click();
+  await page.getByText('Inspect archive details and field matches').first().click();
   await expect(page.getByText('North Market')).toBeVisible();
   expect(outside).toEqual([]);
   const databases = await page.evaluate(async () => (await indexedDB.databases()).map((db) => db.name));
@@ -69,7 +69,7 @@ test('@claim:packet-contents downloads a complete migration packet', async ({ pa
 
 test('@claim:hash-manifest records two SHA-256 hashes per archive', async ({ page }) => {
   await page.goto('/demo');
-  await page.getByText('Inspect manifest and field map').first().click();
+  await page.getByText('Inspect archive details and field matches').first().click();
   const hashes = await page.locator('.archive-card').first().locator('code').allTextContents();
   expect(hashes).toHaveLength(2);
   for (const hash of hashes) expect(hash).toMatch(/^[a-f0-9]{64}$/);
@@ -107,7 +107,7 @@ test('@claim:validation flags invalid and duplicate rows', async ({ page }) => {
     buffer: Buffer.from('Date,Payee,Category,Account,Amount\nnot-a-date,Shop,Food,Card,-10\nnot-a-date,Shop,Food,Card,-10')
   });
   await page.getByRole('button', { name: 'Seal archive' }).click();
-  await page.getByText('Inspect manifest and field map').click();
+  await page.getByText('Inspect archive details and field matches').click();
   await expect(page.getByText('2 rows need a valid date or amount.')).toBeVisible();
   await expect(page.getByText('1 possible duplicate row found.')).toBeVisible();
 });
@@ -145,7 +145,7 @@ test('@claim:field-review saves a changed field map', async ({ page }) => {
   });
   await page.locator('select[data-field="category"]').selectOption('Group');
   await page.getByRole('button', { name: 'Seal archive' }).click();
-  await page.getByText('Inspect manifest and field map').click();
+  await page.getByText('Inspect archive details and field matches').click();
   await expect(page.getByRole('row', { name: /category Group/i })).toBeVisible();
 });
 
@@ -201,8 +201,8 @@ test('@claim:demo-isolation never reads or writes real vault data', async ({ pag
   await page.getByRole('link', { name: 'Demo' }).click();
   await expect(page.getByText('household-ynab.csv', { exact: true })).toBeVisible();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toHaveCount(0);
-  await expect(page.getByRole('link', { name: 'Open my empty vault' })).toBeVisible();
-  await page.getByRole('link', { name: 'Open my empty vault' }).click();
+  await expect(page.getByRole('link', { name: 'Open my vault' })).toBeVisible();
+  await page.getByRole('link', { name: 'Open my vault' }).click();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Demo' }).click();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toHaveCount(0);
@@ -231,12 +231,21 @@ test('@claim:scope-limits keeps originals unchanged and makes no external reques
   expect(outside).toEqual([]);
 });
 
-test('@claim:billing-checkout exposes the $12 Sociobot hosted checkout link', async ({ page }) => {
+test('@claim:billing-checkout opens the reachable Sociobot hosted checkout', async ({ page, request }) => {
   await page.goto('/');
   const buy = page.getByRole('link', { name: 'Buy unlimited archives' });
-  await expect(buy).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/local-finance-export-vault/checkout');
+  const checkout = 'https://api.sociobot.in/api/v1/products/local-finance-export-vault/checkout';
+  await expect(buy).toHaveAttribute('href', checkout);
   await expect(page.getByText('$12 one-time purchase')).toBeVisible();
   await expect(page.getByText("Payment opens in Sociobot's hosted checkout.")).toBeVisible();
+  const redirect = await request.get(checkout, { maxRedirects: 0 });
+  expect(redirect.status()).toBe(303);
+  const destination = new URL(redirect.headers().location, checkout);
+  expect(destination.protocol).toBe('https:');
+  expect(destination.hostname).toBe('checkout.dodopayments.com');
+  const hosted = await request.get(destination.toString());
+  expect(hosted.status()).toBeGreaterThanOrEqual(200);
+  expect(hosted.status()).toBeLessThan(400);
 });
 
 test('@claim:encrypted-local stores ciphertext and reopens only with its password', async ({ page }) => {
