@@ -1,6 +1,6 @@
 # Local Finance Export Vault
 
-Preserve budget exports and make a clear migration packet on your device.
+Preserve budget exports and make a migration packet on your device.
 
 Local Finance Export Vault is for people moving between budget tools. It turns
 CSV exports into a migration packet you can keep and inspect on your device.
@@ -26,7 +26,8 @@ portability record, not accounting, tax, legal, or financial advice.
 
 ## Price
 
-The free vault stores two archives and makes complete migration packets. A $12 one-time
+The free vault stores two archives and makes migration packets with original
+files, standard rows, field matches, and tamper-check codes. A $12 one-time
 license allows unlimited saved archives. The purchase link opens Sociobot's
 hosted checkout. License verification uses the Sociobot billing API.
 
@@ -54,6 +55,13 @@ The exact production build command is `npm run build`. Static output lands in
 
 Claim tests are listed in [`.factory/claims.json`](.factory/claims.json).
 The standard archive format is version `1.0.0`.
+
+## Deploy
+
+Run `npm run build`, then publish the `dist/` directory to the configured
+static host. `public/staticwebapp.config.json` supplies route rewrites, the
+HTTP 404 page, cache rules, and security headers. Deployment credentials stay
+with the configured host; this repository does not contain them.
 
 ## Privacy and security notes
 

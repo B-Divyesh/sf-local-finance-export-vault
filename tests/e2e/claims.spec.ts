@@ -47,7 +47,7 @@ test('@claim:license-privacy sends only a license token to the billing API', asy
   expect(thirdPartyScripts).toEqual([]);
 });
 
-test('@claim:packet-contents downloads a complete migration packet', async ({ page }) => {
+test('@claim:packet-contents downloads a migration packet with its named contents', async ({ page }) => {
   await page.goto('/demo');
   const downloadPromise = page.waitForEvent('download');
   await page.getByRole('button', { name: 'Download migration packet' }).click();

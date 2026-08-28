@@ -42,7 +42,7 @@ const routeDescriptions: Record<string, string> = {
   '/vault': 'Import budget CSV files and make a local migration packet.',
   '/privacy': 'Learn what Local Finance Export Vault stores and what stays on your device.',
   '/terms': 'Read the terms for Local Finance Export Vault and its one-time archive license.',
-  '/404': 'This address does not lead to a Local Finance Export Vault page.'
+  '/404': 'This page does not exist in Local Finance Export Vault.'
 };
 
 void start();
@@ -145,9 +145,9 @@ function homePage(): string {
   return `<main id="main" tabindex="-1">
     <section class="hero poster-section" aria-labelledby="home-title">
       <div class="hero-copy">
-        <p class="eyebrow">A private transfer desk for your data</p>
+        <p class="eyebrow">Local budget export archive</p>
         <h1 id="home-title" data-history-focus="page-title" tabindex="-1">Preserve your budget exports before you switch</h1>
-        <p class="lede">For people changing budget apps who need a checked archive they can understand later.</p>
+        <p class="lede">For people changing budget apps who want to inspect and keep their exports.</p>
         <div class="hero-action"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>Loads two realistic exports in a separate demo.</span></div>
         <ul class="plain-facts" aria-label="Product facts">
           <li><span aria-hidden="true">●</span> Runs offline after the first visit.</li>
@@ -157,15 +157,15 @@ function homePage(): string {
       </div>
       <figure class="hero-art">
         <img src="/art/vault-transfer.webp" width="1200" height="800" alt="An art-deco station vault receives document cases on three brass rails." fetchpriority="high" decoding="async">
-        <figcaption>Original poster art: two budget exports travel into one archive.</figcaption>
+        <figcaption>Original poster art showing two stored budget exports.</figcaption>
       </figure>
     </section>
     <section class="workspace-section" aria-labelledby="workspace-title">
-      <div class="section-heading"><p class="platform-number">Platform 01</p><h2 id="workspace-title">Start your archive</h2><p>Choose a budget CSV. Review each field before you save it.</p></div>
+      <div class="section-heading"><h2 id="workspace-title">Start your archive</h2><p>Choose a budget CSV. Review each field before you save it.</p></div>
       ${workspace()}
     </section>
     <section class="how-section" aria-labelledby="how-title">
-      <div class="section-heading"><p class="platform-number">Route map</p><h2 id="how-title">How your files move</h2></div>
+      <div class="section-heading"><p class="platform-number">Three steps</p><h2 id="how-title">How to make a migration packet</h2></div>
       <ol class="route-steps">
         <li><span>1</span><div><h3>Choose exports</h3><p>Add CSV files from YNAB, Monarch, Actual, or another budget tool.</p></div></li>
         <li><span>2</span><div><h3>Review field matches</h3><p>Match each export column to the standard fields in your archive.</p></div></li>
@@ -183,7 +183,7 @@ function homePage(): string {
 function vaultPage(demo: boolean): string {
   return `<main id="main" class="vault-page" tabindex="-1">
     <section class="vault-intro">
-      <p class="eyebrow">${demo ? 'Sample transfer desk' : 'Your local transfer desk'}</p>
+      <p class="eyebrow">${demo ? 'Sample data' : 'Your local vault'}</p>
       <h1 data-history-focus="page-title" tabindex="-1">${demo ? 'Review two sample budget exports' : 'Build your private migration packet'}</h1>
       <p>${demo ? 'Inspect both field matches, then download a sample migration packet. The demo never reads or saves your files.' : 'Import exports, review their meaning, and keep a portable record.'}</p>
     </section>
@@ -215,7 +215,7 @@ function statusMessages(): string {
 }
 
 function emptyState(): string {
-  return `<div class="empty-state"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M12 29h96v42H12zM25 29V15h70v14"/><path d="M44 43h32M44 54h32"/></svg><h3>Your archive desk is empty</h3><p>Choose a CSV to start its field review.</p></div>`;
+  return `<div class="empty-state"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M12 29h96v42H12zM25 29V15h70v14"/><path d="M44 43h32M44 54h32"/></svg><h3>No archives yet</h3><p>Choose a CSV to start its field review.</p></div>`;
 }
 
 function draftCard(draft: ArchiveDraft, index: number): string {
@@ -279,7 +279,7 @@ function lockedArchiveCard(archive: Extract<VaultItem, { locked: true }>, index:
 
 function packetMaker(): string {
   return `<section class="packet-maker" aria-labelledby="packet-title">
-    <div><p class="platform-number">Final stop</p><h3 id="packet-title">Make the migration packet</h3><p>The ZIP includes original files, standard rows, field matches, and tamper-check codes.</p></div>
+    <div><p class="platform-number">Packet download</p><h3 id="packet-title">Make the migration packet</h3><p>The ZIP includes original files, standard rows, field matches, and tamper-check codes.</p></div>
     <form id="packet-form">
       <label class="toggle"><input type="checkbox" id="encrypt-packet"><span>Encrypt with a password</span></label>
       <div id="password-field" hidden><label for="packet-password">Archive password</label><input id="packet-password" type="password" minlength="8" autocomplete="new-password" aria-describedby="password-help"><small id="password-help">Use at least 8 characters. The password cannot be recovered.</small></div>
@@ -291,7 +291,7 @@ function packetMaker(): string {
 
 function paidSection(): string {
   return `<section class="paid-section" aria-labelledby="paid-title">
-    <div><p class="platform-number">Unlimited archive storage</p><h2 id="paid-title">Keep more than two archives</h2><p>The free vault stores two archives and makes complete migration packets.</p></div>
+    <div><p class="platform-number">Unlimited archive storage</p><h2 id="paid-title">Keep more than two archives</h2><p>The free vault stores two archives and makes migration packets with original files, standard rows, field matches, and tamper-check codes.</p></div>
     <div class="paid-ticket">
       <p class="price"><strong>$12</strong> one-time purchase</p>
       <p>Unlimited saved archives on this device.</p>
@@ -312,7 +312,7 @@ function termsPage(): string {
 }
 
 function notFoundPage(): string {
-  return `<main id="main" class="not-found"><p class="eyebrow">No service here</p><h1 data-history-focus="page-title" tabindex="-1">Page not found</h1><p>The address does not point to an archive desk.</p><a class="button primary" href="/" data-link>Return to the vault</a></main>`;
+  return `<main id="main" class="not-found"><h1 data-history-focus="page-title" tabindex="-1">Page not found</h1><p>This page does not exist.</p><a class="button primary" href="/" data-link>Return to the vault</a></main>`;
 }
 
 function bindGlobalEvents(): void {

@@ -34,6 +34,22 @@ describe('release response and update policy', () => {
     expect(readme).not.toMatch(/standardised (data|rows)/i);
   });
 
+  it('keeps product copy literal, testable, and deployment-ready', () => {
+    const source = readFileSync('src/main.ts', 'utf8');
+    const readme = readFileSync('README.md', 'utf8');
+    const manifest = readFileSync('public/manifest.webmanifest', 'utf8');
+    const static404 = readFileSync('public/404.html', 'utf8');
+    for (const text of [source, readme, manifest, static404]) {
+      expect(text).not.toMatch(/checked archive they can understand later|clear migration packet|complete migration packets/i);
+      expect(text).not.toMatch(/transfer desk|platform 01|route map|how your files move|archive desk|final stop|no service here/i);
+    }
+    expect(source).toContain('For people changing budget apps who want to inspect and keep their exports.');
+    expect(source).toContain('The free vault stores two archives and makes migration packets with original files, standard rows, field matches, and tamper-check codes.');
+    expect(static404).toContain('This page does not exist.');
+    expect(readme).toContain('## Deploy');
+    expect(readme).toContain('publish the `dist/` directory to the configured');
+  });
+
   it('versions every built worker and checks navigation on the network first', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
     const vite = readFileSync('vite.config.ts', 'utf8');

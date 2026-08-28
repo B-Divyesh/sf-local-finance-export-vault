@@ -30,7 +30,7 @@ describe('CSV import', () => {
 });
 
 describe('migration packet', () => {
-  it('keeps originals, neutral rows, a manifest, and a mapping report', async () => {
+  it('keeps originals, standard rows, a manifest, and a mapping report', async () => {
     const draft = makeDraft('actual.csv', 'Date,Account,Payee,Notes,Category,Amount,Cleared\n2026-04-01,Main,Bookshop,Guide,Learning,-19.50,Cleared');
     const archive = await sealDraft(draft, '2026-08-20T10:00:00.000Z');
     const files = unzipSync(makePacket([archive]));

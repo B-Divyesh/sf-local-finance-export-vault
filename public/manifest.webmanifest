@@ -1,7 +1,7 @@
 {
   "name": "Local Finance Export Vault",
   "short_name": "Export Vault",
-  "description": "Preserve budget exports and make a clear migration packet on your device.",
+  "description": "Preserve budget exports and make a migration packet on your device.",
   "id": "/",
   "start_url": "/?v=1",
   "scope": "/",

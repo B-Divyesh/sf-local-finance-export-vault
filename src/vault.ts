@@ -84,7 +84,7 @@ export function makePacket(archives: VaultArchive[]): Uint8Array {
   const files: Record<string, Uint8Array> = {
     'manifest.json': strToU8(JSON.stringify(manifest, null, 2)),
     'mapping-report.md': strToU8(mappingReport(archives)),
-    'README.txt': strToU8('LOCAL FINANCE EXPORT VAULT\n\nThis packet preserves original CSV files, SHA-256 hashes, field mappings, and neutral rows.\nSchema: 1.0.0\nThis is a portability archive, not an accounting or tax record.\n'),
+    'README.txt': strToU8('LOCAL FINANCE EXPORT VAULT\n\nThis packet preserves original CSV files, SHA-256 tamper-check codes, field matches, and standard rows.\nSchema: 1.0.0\nThis is a portability archive, not an accounting or tax record.\n'),
     'normalized-transactions.csv': strToU8(combinedCsv(combinedRows))
   };
   for (const archive of archives) {
@@ -97,9 +97,9 @@ function mappingReport(archives: VaultArchive[]): string {
   const sections = archives.map((archive) => {
     const map = neutralFields.map((field) => `| ${field} | ${archive.manifest.mapping[field] || 'Not mapped'} |`).join('\n');
     const notices = archive.manifest.validation.notices.map((notice) => `- ${notice}`).join('\n');
-    return `## ${archive.name}\n\nSource profile: ${archive.manifest.sourceProfile}\n\nOriginal SHA-256: \`${archive.manifest.originalFile.sha256}\`\n\n| Neutral field | Original field |\n| --- | --- |\n${map}\n\n### Validation\n\n${notices}`;
+    return `## ${archive.name}\n\nSource profile: ${archive.manifest.sourceProfile}\n\nOriginal SHA-256: \`${archive.manifest.originalFile.sha256}\`\n\n| Standard field | Original field |\n| --- | --- |\n${map}\n\n### Validation\n\n${notices}`;
   }).join('\n\n');
-  return `# Field mapping report\n\nNeutral schema version: ${SCHEMA_VERSION}\n\n${sections}\n`;
+  return `# Field mapping report\n\nStandard archive format version: ${SCHEMA_VERSION}\n\n${sections}\n`;
 }
 
 function combinedCsv(rows: Array<Record<string, string | number>>): string {
