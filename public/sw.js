@@ -1,4 +1,6 @@
-const VERSION = 'finance-vault-v1';
+// Vite replaces this marker with a hash of each production bundle. Keep the
+// marker in source so an app-only release always changes the served worker.
+const VERSION = 'finance-vault-__BUILD_VERSION__';
 const SHELL = `${VERSION}-shell`;
 const RUNTIME = `${VERSION}-runtime`;
 const APP_SHELL = [
@@ -47,13 +49,15 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      caches.match(request).then((cached) => cached || fetch(request)
+      fetch(request)
         .then((response) => {
-          const copy = response.clone();
-          caches.open(RUNTIME).then((cache) => cache.put(request, copy));
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(RUNTIME).then((cache) => cache.put(request, copy));
+          }
           return response;
         })
-        .catch(() => caches.match('/index.html')))
+        .catch(async () => (await caches.match(request)) || caches.match('/index.html'))
     );
     return;
   }

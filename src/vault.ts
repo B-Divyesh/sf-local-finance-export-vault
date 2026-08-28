@@ -1,6 +1,6 @@
 import { strToU8, zipSync } from 'fflate';
 import { csvEscape, isValidIsoDate, makeDraft, normalizeRows, rowsToCsv, safeSpreadsheetText } from './csv';
-import { SCHEMA_VERSION, neutralFields, type ArchiveDraft, type VaultArchive } from './types';
+import { SCHEMA_VERSION, neutralFields, type ArchiveDraft, type LockedArchive, type VaultArchive, type VaultItem } from './types';
 
 const DB_NAME = 'local-finance-export-vault';
 const STORE = 'archives';
@@ -151,6 +151,60 @@ export async function encryptPacket(packet: Uint8Array, password: string): Promi
   }));
 }
 
+async function encryptLocalArchive(archive: VaultArchive, password: string): Promise<LockedArchive> {
+  if (password.length < 8) throw new Error('Use at least 8 characters for the local archive password.');
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+  const key = await crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 250_000, hash: 'SHA-256' },
+    material,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt']
+  );
+  const plaintext = new TextEncoder().encode(JSON.stringify(archive));
+  const data = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext));
+  return {
+    id: archive.id,
+    createdAt: archive.createdAt,
+    locked: true,
+    encryption: {
+      format: 'local-finance-export-vault-local',
+      version: 1,
+      cipher: 'AES-256-GCM',
+      keyDerivation: 'PBKDF2-SHA256-250000',
+      salt: bytesToBase64(salt),
+      iv: bytesToBase64(iv),
+      data: bytesToBase64(data)
+    }
+  };
+}
+
+export async function unlockArchive(record: LockedArchive, password: string): Promise<VaultArchive> {
+  if (!password) throw new Error('Enter the password used when this archive was sealed.');
+  try {
+    const material = await crypto.subtle.importKey('raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']);
+    const key = await crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt: base64ToBytes(record.encryption.salt) as BufferSource, iterations: 250_000, hash: 'SHA-256' },
+      material,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['decrypt']
+    );
+    const bytes = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: base64ToBytes(record.encryption.iv) as BufferSource },
+      key,
+      base64ToBytes(record.encryption.data) as BufferSource
+    );
+    const archive = JSON.parse(new TextDecoder().decode(bytes)) as VaultArchive;
+    if (archive.id !== record.id || !archive.manifest?.originalFile?.sha256) throw new Error('invalid archive');
+    return archive;
+  } catch {
+    throw new Error('That password did not open this saved archive. Check it and try again.');
+  }
+}
+
 export async function decryptPacket(envelopeBytes: Uint8Array, password: string): Promise<Uint8Array> {
   if (!password) throw new Error('Enter the password used when this packet was encrypted.');
   let envelope: { format?: string; salt?: string; iv?: string; data?: string };
@@ -186,19 +240,20 @@ function openDatabase(): Promise<IDBDatabase> {
   });
 }
 
-export async function listArchives(): Promise<VaultArchive[]> {
+export async function listArchives(): Promise<VaultItem[]> {
   const db = await openDatabase();
   return new Promise((resolve, reject) => {
     const request = db.transaction(STORE, 'readonly').objectStore(STORE).getAll();
-    request.onsuccess = () => resolve((request.result as VaultArchive[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+    request.onsuccess = () => resolve((request.result as VaultItem[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
     request.onerror = () => reject(new Error('Saved archives could not be read. Reload and try again.'));
   });
 }
 
-export async function saveArchive(archive: VaultArchive): Promise<void> {
+export async function saveArchive(archive: VaultArchive, password = ''): Promise<void> {
   const db = await openDatabase();
+  const record: VaultItem = password ? await encryptLocalArchive(archive, password) : archive;
   return new Promise((resolve, reject) => {
-    const request = db.transaction(STORE, 'readwrite').objectStore(STORE).put(archive);
+    const request = db.transaction(STORE, 'readwrite').objectStore(STORE).put(record);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(new Error('This archive could not be saved. Export a packet before closing the tab.'));
   });

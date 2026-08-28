@@ -70,3 +70,24 @@ export interface VaultArchive {
   rows: NeutralRow[];
   manifest: ArchiveManifest;
 }
+
+export interface LockedArchive {
+  id: string;
+  createdAt: string;
+  locked: true;
+  encryption: {
+    format: 'local-finance-export-vault-local';
+    version: 1;
+    cipher: 'AES-256-GCM';
+    keyDerivation: 'PBKDF2-SHA256-250000';
+    salt: string;
+    iv: string;
+    data: string;
+  };
+}
+
+export type VaultItem = VaultArchive | LockedArchive;
+
+export function isLockedArchive(item: VaultItem): item is LockedArchive {
+  return 'locked' in item && item.locked === true;
+}

@@ -53,6 +53,8 @@ identify steps. Dense table areas can scroll horizontally on 390 px screens.
 - The solid brass button is always the next primary action.
 - Outlined paper buttons are secondary; underlined text is navigation.
 - Imports move through three station labels: **Choose**, **Review**, **Seal**.
+- Local encryption is a jade-edged option on each review ticket. After reload,
+  an encrypted item becomes a labelled lock ticket until its password is entered.
 - Validation uses a stamped result with a plain-language explanation.
 - Destructive actions name the archive and require confirmation.
 
@@ -62,6 +64,10 @@ On entry, poster rays and rules reveal once over 360 ms. New imports slide six
 pixels along a horizontal rail over 220 ms. Buttons depress by two pixels. No
 motion loops. With `prefers-reduced-motion: reduce`, transforms and smooth
 scrolling are removed; content appears immediately and all state remains clear.
+
+The cold first screen keeps the sample action and all three facts above the
+900 px desktop and 844 px mobile folds. On phones, poster art follows the facts
+so the first task is not displaced by decoration.
 
 ## Asset plan and provenance
 

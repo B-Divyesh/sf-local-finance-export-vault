@@ -14,6 +14,7 @@ account.
 - Records SHA-256 hashes for both the original and normalized data.
 - Downloads a ZIP with originals, neutral rows, a manifest, and a mapping report.
 - Encrypts and reopens packets with a password using AES-256-GCM.
+- Optionally encrypts each saved local archive before writing it to IndexedDB.
 - Keeps sealed archives in this browser with IndexedDB.
 - Runs offline after the first visit.
 
@@ -57,7 +58,8 @@ The neutral schema version is `1.0.0`.
 
 ## Privacy and security notes
 
-Financial rows are processed in the browser. Only a paid license token is sent
+Financial rows are processed in the browser. Optional local encryption also
+hides the file name and rows in IndexedDB until the password is entered. Only a paid license token is sent
 to `api.sociobot.in` when a license is verified. Encrypted packets use PBKDF2
 with SHA-256 and 250,000 iterations, then AES-256-GCM. Keep the password
 somewhere separate because it cannot be recovered.

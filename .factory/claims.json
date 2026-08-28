@@ -14,6 +14,13 @@
     "sandbox": "fresh browser context at /demo; intercept all requests and inspect IndexedDB"
   },
   {
+    "id": "license-privacy",
+    "claim": "The app has no analytics or tracking request, and license verification sends only the token to api.sociobot.in.",
+    "where": "privacy page and README",
+    "test": "npm test -- --grep @claim:license-privacy",
+    "sandbox": "fresh real vault; import a private row, intercept all requests, verify a fixture license, and assert the only external request contains no archive data"
+  },
+  {
     "id": "packet-contents",
     "claim": "The migration packet includes originals, neutral rows, a manifest, hashes, and a field-mapping report.",
     "where": "packet maker and README",
@@ -54,6 +61,20 @@
     "where": "privacy page and README",
     "test": "npm test -- --grep @claim:browser-persistence",
     "sandbox": "fresh browser context; seal one CSV, reload, and find the archive"
+  },
+  {
+    "id": "encrypted-local",
+    "claim": "A saved local archive can be encrypted with a password before it reaches IndexedDB.",
+    "where": "vault review, privacy page, and README",
+    "test": "npm test -- --grep @claim:encrypted-local",
+    "sandbox": "fresh real vault; encrypt one archive, assert plaintext is absent from IndexedDB, reload, reject a wrong password, and reopen with the right password"
+  },
+  {
+    "id": "demo-isolation",
+    "claim": "The demo never reads or writes real vault archives.",
+    "where": "demo route, demo banner, demo guide, privacy page, and README",
+    "test": "npm test -- --grep @claim:demo-isolation",
+    "sandbox": "fresh context; save a named real archive, enter and leave demo twice, and assert the real archive never appears under the demo banner"
   },
   {
     "id": "free-tier",

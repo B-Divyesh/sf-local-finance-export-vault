@@ -1,14 +1,14 @@
 import './styles.css';
 import { makeDraft } from './csv';
 import { acceptReturnedLicense, checkoutUrl, readLicenseState, restoreLicense, verifyLicense, type LicenseState } from './license';
-import { decryptPacket, encryptPacket, listArchives, makePacket, removeArchive, sampleArchives, saveArchive, sealDraft } from './vault';
-import { neutralFields, SCHEMA_VERSION, type ArchiveDraft, type NeutralField, type VaultArchive } from './types';
+import { decryptPacket, encryptPacket, listArchives, makePacket, removeArchive, sampleArchives, saveArchive, sealDraft, unlockArchive } from './vault';
+import { isLockedArchive, neutralFields, SCHEMA_VERSION, type ArchiveDraft, type NeutralField, type VaultArchive, type VaultItem } from './types';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
 const routeStatus = document.querySelector<HTMLDivElement>('#route-status')!;
-let archives: VaultArchive[] = [];
+let archives: VaultItem[] = [];
 let drafts: ArchiveDraft[] = [];
-let demoLoaded = false;
+const encryptedThisSession = new Set<string>();
 let busy = false;
 let notice = '';
 let error = '';
@@ -28,11 +28,14 @@ const routeTitles: Record<string, string> = {
 void start();
 
 async function start(): Promise<void> {
+  if (location.pathname === '/' && new URLSearchParams(location.search).get('demo') === '1') {
+    history.replaceState({}, '', '/demo');
+  }
   acceptReturnedLicense();
   licenseState = readLicenseState();
   await loadRouteData();
   render();
-  if (location.pathname !== '/demo') {
+  if (!isDemo()) {
     licenseState = await verifyLicense();
     render();
   }
@@ -48,10 +51,7 @@ async function loadRouteData(): Promise<void> {
   error = '';
   try {
     if (isDemo()) {
-      if (!demoLoaded) {
-        archives = await sampleArchives();
-        demoLoaded = true;
-      }
+      archives = await sampleArchives();
     } else {
       archives = await listArchives();
     }
@@ -96,7 +96,7 @@ function shell(content: string, demo: boolean): string {
     ${content}
     <footer class="site-footer">
       <p>Preserve budget exports on your device.</p>
-      <nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://www.sociobot.in" rel="external">Built by Param Factory <span class="sr-only">(external site)</span></a></nav>
+      <nav aria-label="Footer navigation"><a href="/privacy" data-link>Privacy</a><a href="/terms" data-link>Terms</a><a href="https://sociobot.in" rel="external">Built by Param Factory <span class="sr-only">(external site)</span></a></nav>
       <p class="build">Version 1.0 · Schema ${SCHEMA_VERSION} · Hero art generated for this product.</p>
     </footer>
     ${updateWaiting ? '<div class="toast" role="status">A new version is ready. <button type="button" data-action="update">Update now</button></div>' : ''}
@@ -108,7 +108,7 @@ function demoBanner(): string {
 }
 
 function homePage(): string {
-  return `<main id="main">
+  return `<main id="main" tabindex="-1">
     <section class="hero poster-section" aria-labelledby="home-title">
       <div class="hero-copy">
         <p class="eyebrow">A private transfer desk for your data</p>
@@ -147,7 +147,7 @@ function homePage(): string {
 }
 
 function vaultPage(demo: boolean): string {
-  return `<main id="main" class="vault-page">
+  return `<main id="main" class="vault-page" tabindex="-1">
     <section class="vault-intro">
       <p class="eyebrow">${demo ? 'Sample transfer desk' : 'Your local transfer desk'}</p>
       <h1 tabindex="-1">${demo ? 'Review two sample budget exports' : 'Build your private migration packet'}</h1>
@@ -172,7 +172,7 @@ function workspace(): string {
     ${statusMessages()}
     ${drafts.map(draftCard).join('')}
     ${archives.length ? archiveList() : emptyState()}
-    ${archives.length ? packetMaker() : ''}
+    ${archives.some((archive) => !isLockedArchive(archive)) ? packetMaker() : ''}
   </div>`;
 }
 
@@ -187,27 +187,31 @@ function emptyState(): string {
 function draftCard(draft: ArchiveDraft, index: number): string {
   const hasFlow = draft.parsed.headers.some((header) => header.toLowerCase() === 'outflow') && draft.parsed.headers.some((header) => header.toLowerCase() === 'inflow');
   return `<section class="draft-card" aria-labelledby="draft-${index}">
-    <div class="ticket-heading"><span>Review</span><div><h3 id="draft-${index}">${escapeHtml(draft.name)}</h3><p>${escapeHtml(draft.source)} · ${draft.parsed.rows.length} rows · ${draft.bytes.toLocaleString()} bytes</p></div></div>
+    <div class="ticket-heading"><span>Review</span><div><h3 id="draft-${index}" tabindex="-1">${escapeHtml(draft.name)}</h3><p>${escapeHtml(draft.source)} · ${draft.parsed.rows.length} rows · ${draft.bytes.toLocaleString()} bytes</p></div></div>
     <p>Check what each original field means. Date and amount are required.</p>
     <div class="mapping-grid">
       ${neutralFields.map((field) => `<label><span>${field}${field === 'date' || field === 'amount' ? ' *' : ''}</span><select data-draft="${index}" data-field="${field}"><option value="">Not mapped</option>${field === 'amount' && hasFlow ? `<option value="__flow__" ${draft.mapping[field] === '__flow__' ? 'selected' : ''}>Inflow minus outflow</option>` : ''}${draft.parsed.headers.map((header) => `<option value="${escapeAttr(header)}" ${draft.mapping[field] === header ? 'selected' : ''}>${escapeHtml(header)}</option>`).join('')}</select></label>`).join('')}
+    </div>
+    <div class="local-encryption">
+      <label class="toggle"><input type="checkbox" data-local-encrypt="${index}"><span>Encrypt this saved archive</span></label>
+      <div data-local-password-field="${index}" hidden><label for="local-password-${index}">Local archive password</label><input id="local-password-${index}" data-local-password="${index}" type="password" minlength="8" autocomplete="new-password" aria-describedby="local-password-help-${index}"><small id="local-password-help-${index}">You will enter this password after a reload. It cannot be recovered.</small></div>
     </div>
     <div class="card-actions"><button class="button primary" type="button" data-action="seal" data-index="${index}">Seal archive</button><button class="button secondary" type="button" data-action="discard-draft" data-index="${index}">Discard file</button></div>
   </section>`;
 }
 
 function archiveList(): string {
-  return `<div class="archive-list"><div class="rail-label"><span>Sealed</span><span>SHA-256 manifests</span></div>${archives.map((archive, index) => archiveCard(archive, index)).join('')}</div>`;
+  return `<div class="archive-list"><div class="rail-label"><span>Sealed</span><span>SHA-256 manifests</span></div>${archives.map((archive, index) => isLockedArchive(archive) ? lockedArchiveCard(archive, index) : archiveCard(archive, index)).join('')}</div>`;
 }
 
 function archiveCard(archive: VaultArchive, index: number): string {
   const validation = archive.manifest.validation;
   const valid = validation.invalidRows === 0;
-  return `<article class="archive-card">
+  return `<article class="archive-card" data-archive-id="${escapeAttr(archive.id)}">
     <div class="archive-summary">
       <label class="packet-check"><input type="checkbox" name="archive" value="${escapeAttr(archive.id)}" checked><span class="sr-only">Include ${escapeHtml(archive.name)} in packet</span></label>
       <span class="archive-index">${String(index + 1).padStart(2, '0')}</span>
-      <div><h3>${escapeHtml(archive.name)}</h3><p>${escapeHtml(archive.manifest.sourceProfile)} · ${archive.rows.length} rows · schema ${archive.manifest.schemaVersion}</p></div>
+      <div><h3 tabindex="-1">${escapeHtml(archive.name)}</h3><p>${escapeHtml(archive.manifest.sourceProfile)} · ${archive.rows.length} rows · schema ${archive.manifest.schemaVersion}${encryptedThisSession.has(archive.id) ? ' · encrypted on this device' : ''}</p></div>
       <span class="stamp ${valid ? 'valid' : 'warning'}">${valid ? 'Checked' : `${validation.invalidRows} to review`}</span>
     </div>
     <details>
@@ -220,6 +224,22 @@ function archiveCard(archive: VaultArchive, index: number): string {
       <div class="table-wrap"><table class="row-preview"><caption>First ${Math.min(5, archive.rows.length)} neutral rows from ${escapeHtml(archive.name)}</caption><thead><tr><th scope="col">Date</th><th scope="col">Payee</th><th scope="col">Category</th><th scope="col">Account</th><th scope="col">Amount</th></tr></thead><tbody>${archive.rows.slice(0, 5).map((row) => `<tr><td>${escapeHtml(row.date)}</td><td>${escapeHtml(row.payee || '—')}</td><td>${escapeHtml(row.category || '—')}</td><td>${escapeHtml(row.account || '—')}</td><td class="amount">${escapeHtml(row.amount)}</td></tr>`).join('')}</tbody></table></div>
       ${isDemo() ? '' : `<button class="text-button danger" type="button" data-action="remove" data-id="${escapeAttr(archive.id)}" data-name="${escapeAttr(archive.name)}">Remove this archive</button>`}
     </details>
+  </article>`;
+}
+
+function lockedArchiveCard(archive: Extract<VaultItem, { locked: true }>, index: number): string {
+  return `<article class="archive-card locked-card" data-archive-id="${escapeAttr(archive.id)}">
+    <div class="archive-summary">
+      <span class="lock-mark" aria-hidden="true">◆</span>
+      <span class="archive-index">${String(index + 1).padStart(2, '0')}</span>
+      <div><h3 tabindex="-1">Encrypted saved archive</h3><p>Sealed ${formatDate(archive.createdAt)} · password required</p></div>
+      <span class="stamp valid">Encrypted</span>
+    </div>
+    <form class="unlock-form" data-unlock-form="${escapeAttr(archive.id)}">
+      <label for="unlock-${escapeAttr(archive.id)}">Local archive password</label>
+      <div><input id="unlock-${escapeAttr(archive.id)}" type="password" autocomplete="current-password"><button class="button secondary" type="submit">Open saved archive</button></div>
+    </form>
+    <button class="text-button danger" type="button" data-action="remove" data-id="${escapeAttr(archive.id)}" data-name="this encrypted archive">Remove this encrypted archive</button>
   </article>`;
 }
 
@@ -250,11 +270,11 @@ function paidSection(): string {
 }
 
 function privacyPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">The short version</p><h1 tabindex="-1">Your financial rows stay on your device</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the vault stores</h2><p>Your imported files, field maps, hashes, and normalized rows are stored in this browser with IndexedDB.</p><p>Demo data stays in memory and is discarded when you leave or reset the demo.</p></section><section><h2>What leaves the device</h2><p>Archive data is not sent to us. This site has no analytics, ads, bank connection, or tracking script.</p><p>If you verify a paid license, only the license token goes to the Sociobot billing API. Financial rows are never included.</p></section><section><h2>Your controls</h2><p>You can download each migration packet and remove saved archives. Clearing this site's browser data also removes them.</p></section><section><h2>Contact</h2><p>For privacy questions, email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">The short version</p><h1 tabindex="-1">Your financial rows stay on your device</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the vault stores</h2><p>Your imported files, field maps, hashes, and normalized rows are stored in this browser with IndexedDB.</p><p>You can encrypt each saved archive with a password. Its file name and financial rows then remain encrypted in IndexedDB.</p><p>Demo data stays in memory and is discarded when you leave or reset the demo.</p></section><section><h2>What leaves the device</h2><p>Archive data is not sent to us. The tested app contains no analytics, ads, bank connection, or tracking script.</p><p>If you verify a paid license, only the license token goes to the Sociobot billing API. Financial rows are never included.</p></section><section><h2>Your controls</h2><p>You can download each migration packet and remove saved archives. Clearing this site's browser data also removes them.</p></section><section><h2>Contact</h2><p>For privacy questions, email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p></section></main>`;
 }
 
 function termsPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into a documented neutral schema. It also records hashes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field map and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. Sociobot and Dodo handle checkout and refunds.</p><p>A refund revokes the license. Core export and accessibility features remain available without a purchase.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into a documented neutral schema. It also records hashes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field map and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. Sociobot and Dodo handle checkout and refunds.</p><p>A refunded or disputed license may stop verifying. The free vault still stores two archives and makes packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
 }
 
 function notFoundPage(): string {
@@ -265,6 +285,12 @@ function bindGlobalEvents(): void {
   addEventListener('popstate', () => { void routeChanged(); });
   addEventListener('online', () => { online = true; render(); });
   addEventListener('offline', () => { online = false; render(); });
+  document.querySelector<HTMLAnchorElement>('.skip-link')?.addEventListener('click', (event) => {
+    event.preventDefault();
+    const main = document.querySelector<HTMLElement>('#main');
+    main?.focus();
+    main?.scrollIntoView({ block: 'start' });
+  });
 }
 
 function bindPageEvents(): void {
@@ -277,6 +303,16 @@ function bindPageEvents(): void {
   document.querySelectorAll<HTMLSelectElement>('select[data-draft]').forEach((select) => select.addEventListener('change', () => {
     const draft = drafts[Number(select.dataset.draft)];
     if (draft) draft.mapping[select.dataset.field as NeutralField] = select.value;
+  }));
+  document.querySelectorAll<HTMLInputElement>('[data-local-encrypt]').forEach((toggle) => toggle.addEventListener('change', () => {
+    const index = toggle.dataset.localEncrypt ?? '';
+    const field = document.querySelector<HTMLElement>(`[data-local-password-field="${index}"]`);
+    if (field) field.hidden = !toggle.checked;
+    if (toggle.checked) document.querySelector<HTMLInputElement>(`[data-local-password="${index}"]`)?.focus();
+  }));
+  document.querySelectorAll<HTMLFormElement>('[data-unlock-form]').forEach((form) => form.addEventListener('submit', (event) => {
+    event.preventDefault();
+    void openSavedArchive(form);
   }));
   document.querySelectorAll<HTMLButtonElement>('[data-action]').forEach((button) => button.addEventListener('click', () => { void onAction(button); }));
   document.querySelector<HTMLInputElement>('#encrypt-packet')?.addEventListener('change', (event) => {
@@ -310,6 +346,7 @@ async function onFiles(event: Event): Promise<void> {
   }
   busy = false;
   render();
+  document.querySelector<HTMLElement>('.draft-card:last-of-type h3')?.focus();
 }
 
 async function onAction(button: HTMLButtonElement): Promise<void> {
@@ -318,15 +355,30 @@ async function onAction(button: HTMLButtonElement): Promise<void> {
     const index = Number(button.dataset.index);
     const draft = drafts[index];
     if (!draft) return;
+    if (!licenseState.unlocked && archives.length >= 2) {
+      error = 'The free vault already holds two archives. Remove one or verify an unlimited license.';
+      render();
+      return;
+    }
+    const encryptLocal = document.querySelector<HTMLInputElement>(`[data-local-encrypt="${index}"]`)?.checked ?? false;
+    const localPassword = document.querySelector<HTMLInputElement>(`[data-local-password="${index}"]`)?.value ?? '';
+    if (encryptLocal && localPassword.length < 8) {
+      error = 'Use at least 8 characters for the local archive password.';
+      render();
+      return;
+    }
     busy = true; error = ''; notice = ''; render();
     try {
       const archive = await sealDraft(draft);
+      if (!isDemo()) await saveArchive(archive, encryptLocal ? localPassword : '');
       archives.unshift(archive);
-      if (!isDemo()) await saveArchive(archive);
+      if (encryptLocal) encryptedThisSession.add(archive.id);
       drafts.splice(index, 1);
       notice = `${archive.name} is sealed with a manifest and two SHA-256 hashes.`;
     } catch (cause) { error = messageOf(cause); }
     busy = false; render();
+    const firstArchive = archives[0];
+    if (firstArchive) document.querySelector<HTMLElement>(`[data-archive-id="${CSS.escape(firstArchive.id)}"] h3`)?.focus();
   } else if (action === 'discard-draft') {
     drafts.splice(Number(button.dataset.index), 1); render();
   } else if (action === 'remove') {
@@ -349,7 +401,7 @@ async function onAction(button: HTMLButtonElement): Promise<void> {
 async function downloadPacket(): Promise<void> {
   error = ''; notice = '';
   const selected = [...document.querySelectorAll<HTMLInputElement>('input[name="archive"]:checked')].map((item) => item.value);
-  const chosen = archives.filter((archive) => selected.includes(archive.id));
+  const chosen = archives.filter((archive): archive is VaultArchive => !isLockedArchive(archive) && selected.includes(archive.id));
   const encrypt = document.querySelector<HTMLInputElement>('#encrypt-packet')?.checked ?? false;
   const password = document.querySelector<HTMLInputElement>('#packet-password')?.value ?? '';
   try {
@@ -376,11 +428,32 @@ async function onRestoreLicense(): Promise<void> {
   const input = document.querySelector<HTMLInputElement>('#license-token');
   try {
     restoreLicense(input?.value ?? '');
-    licenseState = { unlocked: true, checking: true, message: 'Checking this license…' };
+    licenseState = { unlocked: false, checking: true, message: 'Checking this license…' };
     render();
     licenseState = await verifyLicense(true);
   } catch (cause) { error = messageOf(cause); }
   render();
+}
+
+async function openSavedArchive(form: HTMLFormElement): Promise<void> {
+  const id = form.dataset.unlockForm ?? '';
+  const index = archives.findIndex((archive) => archive.id === id);
+  const record = archives[index];
+  if (index < 0 || !record || !isLockedArchive(record)) return;
+  const password = form.querySelector<HTMLInputElement>('input[type="password"]')?.value ?? '';
+  try {
+    const archive = await unlockArchive(record, password);
+    archives[index] = archive;
+    encryptedThisSession.add(archive.id);
+    error = '';
+    notice = `${archive.name} is open for this tab. Its saved copy stays encrypted.`;
+    render();
+    document.querySelector<HTMLElement>(`[data-archive-id="${CSS.escape(archive.id)}"] h3`)?.focus();
+  } catch (cause) {
+    error = messageOf(cause);
+    render();
+    document.querySelector<HTMLInputElement>(`#unlock-${CSS.escape(id)}`)?.focus();
+  }
 }
 
 async function openEncryptedPacket(): Promise<void> {
@@ -423,7 +496,8 @@ function registerServiceWorker(): void {
   if (!('serviceWorker' in navigator) || import.meta.env.DEV) return;
   const wasControlled = Boolean(navigator.serviceWorker.controller);
   let refreshing = false;
-  navigator.serviceWorker.register('/sw.js').then((registration) => {
+  navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then((registration) => {
+    void registration.update();
     if (registration.waiting) { updateWaiting = registration.waiting; render(); }
     registration.addEventListener('updatefound', () => {
       const worker = registration.installing;
@@ -431,6 +505,7 @@ function registerServiceWorker(): void {
         if (worker.state === 'installed' && navigator.serviceWorker.controller) { updateWaiting = worker; render(); }
       });
     });
+    addEventListener('focus', () => { void registration.update(); });
   }).catch(() => { /* The app remains usable if installation is unavailable. */ });
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (wasControlled && !refreshing) {
