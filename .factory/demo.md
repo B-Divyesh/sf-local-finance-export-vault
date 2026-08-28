@@ -11,8 +11,8 @@ for this product. They include categories, accounts, notes, and cleared states.
 Demo data lives only in module memory. Each entry to the demo replaces the
 working state with fresh samples. It never opens or writes the real
 `local-finance-export-vault` IndexedDB database. Reloading or choosing **Reset
-demo** recreates the same samples. **Start for real** discards the sample state
-and opens `/vault`.
+demo** recreates the same samples. **Open my empty vault** discards the sample
+state and opens `/vault`; the real vault is separate from the demo namespace.
 
 Verification can inspect both field maps, validation notes, original and
 neutral SHA-256 hashes, the ZIP packet, encryption, and offline reload without

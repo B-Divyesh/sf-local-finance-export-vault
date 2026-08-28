@@ -15,6 +15,18 @@ describe('release response and update policy', () => {
     expect(config.routes.find((route) => route.route === '/assets/*')?.headers?.['Cache-Control']).toBe('public, max-age=31536000, immutable');
   });
 
+  it('ships the HTTP 404 as a complete site page with discoverable metadata', () => {
+    const page = readFileSync('public/404.html', 'utf8');
+    expect(page).toContain('<main id="main"');
+    expect(page).toContain('<h1 id="not-found-title">Page not found</h1>');
+    expect(page).toContain('Skip to main content');
+    expect(page).toContain('aria-label="Primary navigation"');
+    expect(page).toContain('aria-label="Footer navigation"');
+    expect(page).toContain('property="og:title"');
+    expect(page).toContain('name="twitter:card"');
+    expect(page).toContain('Built by Param Factory');
+  });
+
   it('versions every built worker and checks navigation on the network first', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
     const vite = readFileSync('vite.config.ts', 'utf8');

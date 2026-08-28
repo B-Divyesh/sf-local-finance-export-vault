@@ -71,10 +71,10 @@ button { color: inherit; }
   gap: 48px;
   border-bottom: 1px solid color-mix(in srgb, var(--brass) 45%, transparent);
 }
-.wordmark { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; gap: 10px; color: var(--paper); text-decoration: none; font: 700 13px/1.05 var(--body); letter-spacing: .13em; text-transform: uppercase; }
+.wordmark { min-width: 46px; min-height: 46px; display: inline-flex; align-items: center; gap: 10px; color: var(--paper); text-decoration: none; font: 700 13px/1.05 var(--body); letter-spacing: .13em; text-transform: uppercase; }
 .wordmark svg { width: 44px; height: 44px; fill: none; stroke: var(--brass); stroke-width: 2; }
 .site-header nav { display: flex; align-items: center; gap: 32px; margin-left: auto; }
-.site-header nav a { min-width: 44px; min-height: 44px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; color: var(--paper-dim); text-decoration: none; border-bottom: 2px solid transparent; }
+.site-header nav a { min-width: 46px; min-height: 46px; padding: 0 6px; display: inline-flex; align-items: center; justify-content: center; color: var(--paper-dim); text-decoration: none; border-bottom: 2px solid transparent; }
 .site-header nav a:hover, .site-header nav a[aria-current] { color: var(--paper); border-color: var(--brass); }
 .network-state { padding-left: 18px; font-size: 13px; color: var(--jade); position: relative; white-space: nowrap; }
 .network-state::before { content: ''; position: absolute; left: 0; top: .55em; width: 8px; height: 8px; background: var(--jade); transform: rotate(45deg); }
@@ -177,11 +177,11 @@ select, input[type='password'], input[name='license'] { width: 100%; min-height:
 .rail-label { margin-bottom: 8px; padding: 6px 12px; display: flex; justify-content: space-between; color: var(--ink); background: repeating-linear-gradient(135deg,var(--brass),var(--brass) 12px,#c88f31 12px,#c88f31 24px); font-size: 12px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
 .archive-card { border-bottom: 1px solid #415051; background: var(--ink); }
 .archive-summary { min-height: 96px; padding: 16px; display: grid; grid-template-columns: 44px 44px 1fr auto; align-items: center; gap: 12px; }
-.packet-check { width: 44px; height: 44px; display: grid; place-items: center; }
+.packet-check { width: 46px; height: 46px; display: grid; place-items: center; }
 .packet-check input, .toggle input {
-  width: 44px;
-  height: 44px;
-  flex: 0 0 44px;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
   margin: 0;
   border: 0;
   appearance: none;
@@ -265,7 +265,7 @@ tbody th { text-transform: capitalize; }
 .site-footer { max-width: 1240px; margin: auto; padding: 40px 24px 56px; display: grid; grid-template-columns: 1fr auto; gap: 16px 32px; border-top: 1px solid var(--brass-dark); color: var(--paper-dim); font-size: 14px; }
 .site-footer p { margin: 0; }
 .site-footer nav { display: flex; gap: 16px; }
-.site-footer nav a { min-height: 44px; padding: 9px 4px; display: inline-flex; align-items: center; }
+.site-footer nav a { min-width: 46px; min-height: 46px; padding: 9px 4px; display: inline-flex; align-items: center; }
 .site-footer .build { grid-column: 1 / -1; font-size: 12px; }
 .toast { position: fixed; z-index: 50; right: 24px; bottom: 24px; padding: 16px; color: var(--ink); background: var(--paper); box-shadow: 8px 8px 0 var(--brass-dark); }
 .toast button { min-height: 44px; margin-left: 12px; border: 0; background: var(--brass); font-weight: 800; cursor: pointer; }
@@ -303,8 +303,8 @@ tbody th { text-transform: capitalize; }
   .mapping-grid { grid-template-columns: 1fr; }
   .card-actions { align-items: stretch; flex-direction: column; }
   .archive-list { padding: 16px; }
-  .archive-summary { grid-template-columns: 36px 1fr; padding: 16px 8px; }
-  .archive-summary .packet-check { grid-row: 1 / span 2; width: 36px; }
+  .archive-summary { grid-template-columns: 46px 1fr; padding: 16px 8px; }
+  .archive-summary .packet-check { grid-row: 1 / span 2; width: 46px; }
   .archive-index { display: none; }
   .stamp { grid-column: 2; justify-self: start; }
   .manifest-grid, .packet-maker { grid-template-columns: 1fr; padding: 24px 16px; }

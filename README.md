@@ -3,13 +3,12 @@
 Preserve budget exports and make a clear migration packet on your device.
 
 Local Finance Export Vault is for people moving between budget tools. It turns
-CSV exports into a documented, vendor-neutral archive without bank access or an
-account.
+CSV exports into an archive packet you can keep and inspect on your device.
 
 ## What it does
 
 - Imports YNAB, Monarch, Actual, and generic budget CSV shapes.
-- Lets you review each source-to-neutral field mapping before saving.
+- Lets you review each source field against the standard archive fields before saving.
 - Validates dates and amounts and flags possible duplicate rows.
 - Records SHA-256 hashes for both the original and normalized data.
 - Downloads a ZIP with originals, neutral rows, a manifest, and a mapping report.
@@ -22,14 +21,14 @@ The demo at [`/demo`](https://local-finance-export-vault.sociobot.in/demo)
 loads two realistic exports in one click. Demo rows stay in memory and are not
 written to the real vault.
 
-This tool does not connect to banks or prepare financial advice, accounts, or
-tax returns. It does not certify that a vendor export is complete.
+This tool does not connect to banks or change your original CSV files. It is a
+portability record, not accounting, tax, legal, or financial advice.
 
 ## Price
 
 The free vault stores two archives and makes complete packets. A $12 one-time
-license allows unlimited saved archives. Checkout and license verification use
-the Sociobot billing API; no payment provider is embedded here.
+license allows unlimited saved archives. The purchase link opens Sociobot's
+hosted checkout. License verification uses the Sociobot billing API.
 
 ## Run locally
 

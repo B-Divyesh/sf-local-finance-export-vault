@@ -137,6 +137,18 @@ test('@claim:common-imports imports YNAB, Monarch, Actual, and generic CSV shape
   await expect(page.getByText('Generic budget CSV · 1 rows · schema 1.0.0')).toBeVisible();
 });
 
+test('@claim:field-review saves a changed field map', async ({ page }) => {
+  await page.goto('/vault');
+  await page.locator('#csv-files').setInputFiles({
+    name: 'mapped.csv', mimeType: 'text/csv',
+    buffer: Buffer.from('Date,Store,Group,Amount\n2026-08-01,Corner Shop,Groceries,-12.40')
+  });
+  await page.locator('select[data-field="category"]').selectOption('Group');
+  await page.getByRole('button', { name: 'Seal archive' }).click();
+  await page.getByText('Inspect manifest and field map').click();
+  await expect(page.getByRole('row', { name: /category Group/i })).toBeVisible();
+});
+
 test('@claim:browser-persistence keeps a sealed archive after reload', async ({ page }) => {
   await page.goto('/vault');
   await page.locator('#csv-files').setInputFiles({
@@ -149,6 +161,8 @@ test('@claim:browser-persistence keeps a sealed archive after reload', async ({ 
 });
 
 test('@claim:free-tier limits free storage to two archives and shows the paid route', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByText('Free for two archives. $12 once for unlimited archives.')).toBeVisible();
   await page.goto('/vault');
   await page.locator('#csv-files').setInputFiles([
     { name: 'one.csv', mimeType: 'text/csv', buffer: Buffer.from('Date,Amount\n2026-01-01,1') },
@@ -187,11 +201,42 @@ test('@claim:demo-isolation never reads or writes real vault data', async ({ pag
   await page.getByRole('link', { name: 'Demo' }).click();
   await expect(page.getByText('household-ynab.csv', { exact: true })).toBeVisible();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toHaveCount(0);
-  await page.getByRole('link', { name: 'Start for real' }).click();
+  await expect(page.getByRole('link', { name: 'Open my empty vault' })).toBeVisible();
+  await page.getByRole('link', { name: 'Open my empty vault' }).click();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Demo' }).click();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toHaveCount(0);
   await expect(page.locator('.archive-card')).toHaveCount(2);
+});
+
+test('@claim:scope-limits keeps originals unchanged and makes no external request', async ({ page }) => {
+  const outside: string[] = [];
+  page.on('request', (request) => {
+    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') outside.push(request.url());
+  });
+  const original = 'Date,Payee,Amount\n2026-08-01,North Market,-42.10\n';
+  await page.goto('/vault');
+  await page.locator('#csv-files').setInputFiles({ name: 'original.csv', mimeType: 'text/csv', buffer: Buffer.from(original) });
+  await page.getByRole('button', { name: 'Seal archive' }).click();
+  const downloadPromise = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download migration packet' }).click();
+  const download = await downloadPromise;
+  const stream = await download.createReadStream();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) chunks.push(Buffer.from(chunk));
+  const files = unzipSync(new Uint8Array(Buffer.concat(chunks)));
+  const originalName = Object.keys(files).find((name) => name.endsWith('-original.csv'));
+  expect(originalName).toBeDefined();
+  expect(strFromU8(files[originalName!])).toBe(original);
+  expect(outside).toEqual([]);
+});
+
+test('@claim:billing-checkout exposes the $12 Sociobot hosted checkout link', async ({ page }) => {
+  await page.goto('/');
+  const buy = page.getByRole('link', { name: 'Buy unlimited archives' });
+  await expect(buy).toHaveAttribute('href', 'https://api.sociobot.in/api/v1/products/local-finance-export-vault/checkout');
+  await expect(page.getByText('$12 one-time purchase')).toBeVisible();
+  await expect(page.getByText("Payment opens in Sociobot's hosted checkout.")).toBeVisible();
 });
 
 test('@claim:encrypted-local stores ciphertext and reopens only with its password', async ({ page }) => {

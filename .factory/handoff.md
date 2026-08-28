@@ -1,163 +1,60 @@
-# Review handoff — FAIL (2026-08-28 UTC)
-
-The current independent adversarial review is [review-1.md](review-1.md).
-No product code was changed for this work order.
-
-- Live cold-read, demo, isolation, offline, link, route, and 404 checks ran at 390 × 844 and 1440 × 900.
-- A fresh clone passed npm ci, all 13 literal claims commands, npm test, and npm run build.
-- Result: FAIL. Remaining findings are the incomplete claim inventory, unclear copy, and a static 404 without the standard skeleton/metadata.
-
-After repairs, rerun every command in .factory/claims.json, npm test, npm run build, a fresh offline /demo check, and a direct missing-route request.
-
----
-
-# Previous verification addendum — PASS (2026-08-28 UTC)
-
-Independent QA of candidate `94769ecfc814364943ace93ae1e247d089c6cd1d` at
-<https://local-finance-export-vault.sociobot.in> passed. This replaces the
-earlier failed-candidate outcome for release purposes; the full fresh evidence
-is in [`verification-2.md`](verification-2.md).
-
-- Clean install, all 13 literal claim commands, `npm test` (7 unit/policy and
-  25 Chromium tests), lint/typecheck, and production build passed.
-- Rebuilt index, service worker, JS/CSS, manifest, art, and icons match the
-  live deployment; offline PWA reload, demo isolation, packet contents,
-  local encryption, billing redirect, security headers, mobile/keyboard/Axe,
-  and API rate limiting were independently checked.
-- Result: **PASS — releasable.** No known release defects.
-
-Run the verification baseline with:
-
-```bash
-npm ci
-npm test
-npm run lint
-npm run typecheck
-npm run build
-```
-
-# Repair handoff — Local Finance Export Vault
+# Local Finance Export Vault — polish round 1 handoff
 
 ## Result
 
-Release blockers reported in commit `441d536fe36c1b14d1667e470a39324cbf66b007`
-for candidate `f9c434f6c73016006c8a1fcaeea9a1fd3462235f` are repaired. The
-artifact remains a Vite and TypeScript offline PWA with static output in
-`dist/`.
+All findings in [`review-1.md`](review-1.md) are repaired. The product remains
+a Vite + TypeScript local-first PWA with Static Web Apps output in `dist/` and
+the art-deco Night Transfer Office visual system intact.
 
-## Repairs
+## What changed
 
-- Fixed `npm test -- --grep @claim:<id>` argument forwarding. All 13 published
-  commands now select and pass exactly one claim test.
-- Strengthened claims for original files in packets, all four CSV shapes, the
-  third-archive limit, a verified unlimited license, demo isolation, license
-  request privacy, and encrypted local persistence.
-- Reinitialize samples on every demo entry and normalize `/?demo=1` to
-  `/demo`. Real IndexedDB archives never enter demo state.
-- Added optional per-archive AES-256-GCM encryption before IndexedDB writes,
-  using PBKDF2-SHA256 with 250,000 iterations. Locked archives reopen only with
-  the password; the password is never stored.
-- Removed optimistic unlock for unverified license tokens and enforce the
-  two-archive limit again when each draft is sealed.
-- Registered the live `$12` one-time product through the Sociobot billing
-  engine. The public catalog reports 1,200 USD minor units and checkout returns
-  a hosted Dodo redirect.
-- Stamp `sw.js` with a hash of each production bundle, bypass HTTP caching when
-  checking the worker, and use network-first navigation with cached offline
-  fallback. A changed app bundle now changes the worker bytes and surfaces the
-  existing update toast.
-- Fit the sample action and all three facts inside both 1440 × 900 and 390 ×
-  844 first screens. Enlarged mobile navigation, demo, wordmark, and footer
-  targets to at least 44 px.
-- Restore focus to the imported draft and sealed archive after rerenders; the
-  skip link now moves focus to the main landmark.
-- Replaced the broken `www.sociobot.in` link, configured immutable one-year
-  caching for shipped assets, and changed Static Web Apps routing so unknown
-  paths reach `404.html` with HTTP 404.
-- Updated the privacy, terms, demo, claims, README, and visual-system records to
-  match the repaired behavior.
+- Added three observable claim tests: editable field review, original-file
+  preservation/no bank request, and the exact hosted Sociobot checkout route.
+  Removed claims that cannot be verified in the sandbox.
+- Rewrote first-screen, workflow, archive-limit, payment, and README copy in
+  plain language. The price now says `$12 once`; the demo exit says `Open my
+  empty vault`.
+- Added route-specific SPA descriptions/OG/Twitter titles and rebuilt the real
+  static HTTP 404 with the full site skeleton and metadata.
+- Increased key mobile interaction targets to 46px to avoid a browser
+  sub-pixel failure at the 44px accessibility boundary.
+- Added the catalog description, refreshed the copy audit and demo guide, and
+  recorded the complete finding-to-evidence map in [`polish-1.md`](polish-1.md).
 
-## Verification evidence
+## Verification
 
-Clean release matrix on 2026-08-28 UTC:
-
-- `npm ci`: pass; 62 packages installed, 0 vulnerabilities.
-- `npm run lint`: pass (`tsc --noEmit`).
-- `npm test`: pass; 7 unit/policy tests and 25 Chromium tests.
-- `npm run build`: pass; `dist/index.html` produced.
-- Every command in `.factory/claims.json`: pass independently, 13/13.
-- Browser coverage: 1440 × 900 desktop and 390 × 844 mobile; demo/real
-  transitions; keyboard-only import, local encryption, sealing, skip link,
-  and focus restoration; no horizontal overflow.
-- Accessibility: Playwright Axe found zero serious or critical findings on
-  home, demo, privacy, terms, and the encrypted-vault state.
-- Privacy: the demo does not open IndexedDB; a real-to-demo-to-real-to-demo
-  test found no state crossover; the full financial-data flow emitted no
-  third-party request; license verification sent only its fixture token.
-- Offline/update: demo reload passed with the browser offline. Policy tests
-  assert network-first navigation, build-derived worker versions, old-cache
-  cleanup, and immutable response rules.
-- Local Lighthouse: Performance 100, Accessibility 100, Best Practices 100,
-  SEO 100; LCP 1.8 s, CLS 0, TBT 0 ms, total transfer 128 KiB.
-- Production bundle: JavaScript 47,398 bytes raw / 17,468 bytes gzip; CSS
-  18,071 bytes raw / 4,851 bytes gzip; hero WebP 84,800 bytes.
-- Local URL verification: title, `lang`, one `h1`, `main`, alt text, button
-  names, and console checks passed in 563 ms.
-- Visual evidence:
-  `.factory/repair-assets/home-desktop.png`,
-  `.factory/repair-assets/home-mobile-390.png`, and
-  `.factory/repair-assets/demo-mobile-390.png`.
-
-Run the same checks with:
+Executed after `npm ci` (62 packages; 0 vulnerabilities):
 
 ```bash
-npm ci
-npm run lint
-npm test
-npm run build
-jq -r '.[].test' .factory/claims.json
+npm test                         # pass: 8 unit + 28 Chromium tests
+npm run lint                     # pass
+npm run typecheck                # pass
+npm run build                    # pass; dist/index.html exists
 ```
 
-## Deployment and live checks
+Every literal command in `.factory/claims.json` passed independently (16/16),
+including the offline reload, privacy interception, demo isolation, encrypted
+archive, field-review, scope-limit, and checkout claims. Targeted accessibility
+and regression suites both passed 6/6. The local mobile Lighthouse report is
+at [`polish-1-assets/lighthouse-local.json`](polish-1-assets/lighthouse-local.json):
+100 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1,804ms,
+CLS 0, TBT 0ms.
 
-Azure Static Web Apps deployment
-`1e6b664f-3d13-4c82-a8ff-5413b8b098f7` succeeded from `dist/`. The custom
-domain is Ready with managed TLS.
+Build payload: 48.39 kB raw JavaScript (17.87 kB gzip), 18.09 kB raw CSS
+(4.85 kB gzip), and an 84 kB hero WebP.
 
-- Live `index.html` SHA-256 is
-  `8e88303a28c0b0ebf3b1a9410c8c29201089fe062312ffec85dde3472f1470f6`,
-  byte-for-byte equal to the built file.
-- Live `sw.js` SHA-256 is
-  `78b4303235c364e757e7384b3e9fa982299f238f0c6b16ec8ddf402276c08377`,
-  byte-for-byte equal to the built worker and different from the failed
-  candidate worker.
-- `/`, `/demo`, `/vault`, `/privacy`, and `/terms` return HTTP 200.
-  `/missing-platform` returns HTTP 404 with the designed not-found title.
-- JavaScript, CSS, hero art, SVG/PNG icons, the touch icon, and the social card
-  return `Cache-Control: public, max-age=31536000, immutable`.
-- CSP, `nosniff`, no-referrer, and restrictive permissions headers are live.
-- The billing catalog reports the correct slug, $12 USD price, and product
-  URL. Checkout returns HTTP 303 to `checkout.dodopayments.com`; invalid
-  license verification returns `{valid:false, reason:"invalid"}`.
-- `https://sociobot.in` returns HTTP 200 with valid TLS.
-- Live URL verification passed in 681 ms with no console errors, one `h1`, one
-  `main`, correct title/language, image alt text, and named buttons.
-- Live Playwright Axe checks at desktop and 390 px found zero serious or
-  critical findings on home, demo, privacy, and terms. There was no horizontal
-  overflow, console error, or cross-origin request during demo use. Both
-  packet and encryption checkboxes measure 44 × 44 CSS px at 390 px.
-- A controlled live browser loaded `/demo`, installed the service worker, went
-  offline, and reloaded with two sample archives plus `Offline — ready`.
-- Live Lighthouse: Performance 100, Accessibility 100, Best Practices 100,
-  SEO 100; LCP 1.5 s, CLS 0, TBT 0 ms, total transfer 128 KiB. Report:
-  `.factory/repair-assets/lighthouse-live.json`.
+## Deploy and live verification
+
+Deployed `dist/` to production Static Web Apps (`sf-local-finance-export-vault`).
+Fresh live checks passed at <https://local-finance-export-vault.sociobot.in/>:
+
+- `/` at 390 × 844: H1, CTA, all three facts above the fold, no overflow or console errors.
+- `/?demo=1`: normalizes to `/demo`, displays two sample archives and the reset/empty-vault isolation controls.
+- `/missing-platform`: HTTP 404, Page not found H1, header/footer, and OG/Twitter metadata.
+- Live Axe at 390px on `/`, `/demo`, `/privacy`, and `/terms`: zero serious or critical violations.
+
+Screenshots and the detailed evidence are in [`polish-1.md`](polish-1.md).
 
 ## Known gaps
 
-- Lab INP is unavailable because Lighthouse has no real interaction sample;
-  the browser interaction suite covers import, encryption, sealing, and route
-  transitions.
-- Archive passwords cannot be recovered by design. The interface states this
-  before encryption.
-- Package/consumer checks and backend concurrency do not apply to this static
-  PWA.
+None.

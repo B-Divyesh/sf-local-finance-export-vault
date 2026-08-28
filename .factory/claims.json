@@ -49,6 +49,13 @@
     "sandbox": "fresh real vault; upload and seal an Actual-shaped CSV while demo covers YNAB and Monarch"
   },
   {
+    "id": "field-review",
+    "claim": "You can review and change each export field before saving an archive.",
+    "where": "landing archive start and README",
+    "test": "npm test -- --grep @claim:field-review",
+    "sandbox": "fresh real vault; upload a CSV, change its category mapping, seal it, and inspect the saved field map"
+  },
+  {
     "id": "validation",
     "claim": "The vault validates dates and amounts and flags possible duplicate rows.",
     "where": "README and archive validation panel",
@@ -77,11 +84,25 @@
     "sandbox": "fresh context; save a named real archive, enter and leave demo twice, and assert the real archive never appears under the demo banner"
   },
   {
+    "id": "scope-limits",
+    "claim": "The vault does not connect to banks or change your original files.",
+    "where": "landing limits and README",
+    "test": "npm test -- --grep @claim:scope-limits",
+    "sandbox": "fresh real vault; intercept requests while importing and downloading a packet, then assert no external request and byte-for-byte original CSV output"
+  },
+  {
     "id": "free-tier",
     "claim": "The free vault stores two archives; a $12 one-time license allows unlimited archives.",
     "where": "landing facts, paid section, and terms",
     "test": "npm test -- --grep @claim:free-tier",
     "sandbox": "fresh browser context; add two drafts, assert free limit, price, and Sociobot checkout route"
+  },
+  {
+    "id": "billing-checkout",
+    "claim": "The $12 purchase link opens Sociobot's hosted checkout.",
+    "where": "paid ticket, terms, and README",
+    "test": "npm test -- --grep @claim:billing-checkout",
+    "sandbox": "fresh browser context; inspect the paid ticket's exact Sociobot checkout URL and its $12 one-time label"
   },
   {
     "id": "offline-reload",

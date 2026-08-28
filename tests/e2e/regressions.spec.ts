@@ -61,7 +61,7 @@ test('mobile navigation, demo controls, and footer links have 44px targets', asy
     page.getByRole('link', { name: 'Vault' }).first(),
     page.getByRole('link', { name: 'Privacy' }).first(),
     page.getByRole('button', { name: 'Reset demo' }),
-    page.getByRole('link', { name: 'Start for real' }),
+    page.getByRole('link', { name: 'Open my empty vault' }),
     page.getByRole('link', { name: 'Terms' }),
     page.getByLabel('Include household-ynab.csv in packet'),
     page.getByLabel('Encrypt with a password')

@@ -24,6 +24,14 @@ const routeTitles: Record<string, string> = {
   '/terms': 'Terms — Local Finance Export Vault',
   '/404': 'Not found — Local Finance Export Vault'
 };
+const routeDescriptions: Record<string, string> = {
+  '/': 'Preserve budget exports, check their fields, and make a migration packet without uploading financial rows.',
+  '/demo': 'Try two realistic budget exports in an isolated sample vault.',
+  '/vault': 'Import budget CSV files and make a local migration packet.',
+  '/privacy': 'Learn what Local Finance Export Vault stores and what stays on your device.',
+  '/terms': 'Read the terms for Local Finance Export Vault and its one-time archive license.',
+  '/404': 'This address does not lead to a Local Finance Export Vault page.'
+};
 
 void start();
 
@@ -62,8 +70,7 @@ async function loadRouteData(): Promise<void> {
 
 function render(): void {
   const path = normalPath();
-  document.title = routeTitles[path] ?? routeTitles['/404'];
-  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', `https://local-finance-export-vault.sociobot.in${path === '/404' ? '/' : path}`);
+  updateMetadata(path);
   if (!['/', '/demo', '/vault', '/privacy', '/terms'].includes(path)) {
     app.innerHTML = shell(notFoundPage(), false);
   } else if (path === '/privacy') {
@@ -76,6 +83,19 @@ function render(): void {
     app.innerHTML = shell(vaultPage(path === '/demo'), path === '/demo');
   }
   bindPageEvents();
+}
+
+function updateMetadata(path: string): void {
+  const knownPath = routeTitles[path] ? path : '/404';
+  const title = routeTitles[knownPath];
+  const description = routeDescriptions[knownPath];
+  document.title = title;
+  document.querySelector<HTMLMetaElement>('meta[name="description"]')?.setAttribute('content', description);
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.setAttribute('href', `https://local-finance-export-vault.sociobot.in${knownPath === '/404' ? '/' : knownPath}`);
+  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')?.setAttribute('content', title);
+  document.querySelector<HTMLMetaElement>('meta[property="og:description"]')?.setAttribute('content', description);
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')?.setAttribute('content', title);
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')?.setAttribute('content', description);
 }
 
 function shell(content: string, demo: boolean): string {
@@ -104,7 +124,7 @@ function shell(content: string, demo: boolean): string {
 }
 
 function demoBanner(): string {
-  return `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span><button type="button" data-action="reset-demo">Reset demo</button><a href="/vault" data-link>Start for real</a></span></aside>`;
+  return `<aside class="demo-banner" aria-label="Demo mode"><strong>Demo — sample data, nothing is saved</strong><span><button type="button" data-action="reset-demo">Reset demo</button><a href="/vault" data-link>Open my empty vault</a></span></aside>`;
 }
 
 function homePage(): string {
@@ -118,7 +138,7 @@ function homePage(): string {
         <ul class="plain-facts" aria-label="Product facts">
           <li><span aria-hidden="true">●</span> Runs offline after the first visit.</li>
           <li><span aria-hidden="true">●</span> Financial rows stay in this browser.</li>
-          <li><span aria-hidden="true">●</span> Free for two archives. $12 for unlimited archives.</li>
+          <li><span aria-hidden="true">●</span> Free for two archives. $12 once for unlimited archives.</li>
         </ul>
       </div>
       <figure class="hero-art">
@@ -127,20 +147,20 @@ function homePage(): string {
       </figure>
     </section>
     <section class="workspace-section" aria-labelledby="workspace-title">
-      <div class="section-heading"><p class="platform-number">Platform 01</p><h2 id="workspace-title">Start your archive</h2><p>Choose a budget CSV. You will review each field before saving it.</p></div>
+      <div class="section-heading"><p class="platform-number">Platform 01</p><h2 id="workspace-title">Start your archive</h2><p>Choose a budget CSV. Review each archive field before you save it.</p></div>
       ${workspace()}
     </section>
     <section class="how-section" aria-labelledby="how-title">
       <div class="section-heading"><p class="platform-number">Route map</p><h2 id="how-title">How your files move</h2></div>
       <ol class="route-steps">
         <li><span>1</span><div><h3>Choose exports</h3><p>Add CSV files from YNAB, Monarch, Actual, or another budget tool.</p></div></li>
-        <li><span>2</span><div><h3>Review the map</h3><p>Match original columns to a documented neutral schema.</p></div></li>
-        <li><span>3</span><div><h3>Make a packet</h3><p>Download originals, hashes, validation notes, and neutral rows together.</p></div></li>
+        <li><span>2</span><div><h3>Review the map</h3><p>Match each export column to the standard fields in your archive.</p></div></li>
+        <li><span>3</span><div><h3>Make a packet</h3><p>Download original files, tamper-check codes, row checks, and standard rows together.</p></div></li>
       </ol>
     </section>
     <section class="limits-section" aria-labelledby="limits-title">
-      <div><p class="platform-number">No onward service</p><h2 id="limits-title">Your exports do not become a dashboard</h2></div>
-      <div class="limits-copy"><p>The vault does not connect to banks, score spending, prepare taxes, or change original files.</p><p>It documents portability. It does not certify accounting or tax correctness.</p></div>
+      <div><p class="platform-number">Scope</p><h2 id="limits-title">What the vault does not do</h2></div>
+      <div class="limits-copy"><p>The vault does not connect to banks or change your original files.</p><p>Use it to document portability, not to certify accounting or tax work.</p></div>
     </section>
     ${paidSection()}
   </main>`;
@@ -181,7 +201,7 @@ function statusMessages(): string {
 }
 
 function emptyState(): string {
-  return `<div class="empty-state"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M12 29h96v42H12zM25 29V15h70v14"/><path d="M44 43h32M44 54h32"/></svg><h3>Your archive desk is empty</h3><p>Choose a CSV to see its source fields, row checks, and file hash.</p></div>`;
+  return `<div class="empty-state"><svg viewBox="0 0 120 80" aria-hidden="true"><path d="M12 29h96v42H12zM25 29V15h70v14"/><path d="M44 43h32M44 54h32"/></svg><h3>Your archive desk is empty</h3><p>Choose a CSV to start its field review.</p></div>`;
 }
 
 function draftCard(draft: ArchiveDraft, index: number): string {
@@ -257,14 +277,14 @@ function packetMaker(): string {
 
 function paidSection(): string {
   return `<section class="paid-section" aria-labelledby="paid-title">
-    <div><p class="platform-number">Frequent traveller</p><h2 id="paid-title">Keep more than two archives</h2><p>The free vault stores two archives and makes complete packets.</p></div>
+    <div><p class="platform-number">Unlimited archive storage</p><h2 id="paid-title">Keep more than two archives</h2><p>The free vault stores two archives and makes complete packets.</p></div>
     <div class="paid-ticket">
       <p class="price"><strong>$12</strong> one-time purchase</p>
       <p>Unlimited saved archives on this device.</p>
       <a class="button primary" href="${checkoutUrl}">Buy unlimited archives</a>
       <form id="license-form"><label for="license-token">Have a license? Paste it here.</label><div><input id="license-token" name="license" autocomplete="off"><button class="button secondary" type="submit">Verify license</button></div></form>
       <p class="license-status" aria-live="polite">${escapeHtml(licenseState.message)}</p>
-      <p class="fine-print">Sociobot and Dodo are the merchant of record. Their checkout handles payment and refunds.</p>
+      <p class="fine-print">Payment opens in Sociobot's hosted checkout. <a href="/terms" data-link>Read purchase terms</a>.</p>
     </div>
   </section>`;
 }
@@ -274,11 +294,11 @@ function privacyPage(): string {
 }
 
 function termsPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into a documented neutral schema. It also records hashes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field map and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. Sociobot and Dodo handle checkout and refunds.</p><p>A refunded or disputed license may stop verifying. The free vault still stores two archives and makes packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into standard archive fields. It also records hashes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field map and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. The Buy unlimited archives link opens Sociobot's hosted checkout.</p><p>For payment and refund terms, use the terms shown at checkout. A refunded or disputed license may stop verifying.</p><p>The free vault still stores two archives and makes packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
 }
 
 function notFoundPage(): string {
-  return `<main id="main" class="not-found"><p class="eyebrow">No service here</p><h1 tabindex="-1">This route reaches the wrong platform</h1><p>The address does not point to an archive desk.</p><a class="button primary" href="/" data-link>Return to the vault</a></main>`;
+  return `<main id="main" class="not-found"><p class="eyebrow">No service here</p><h1 tabindex="-1">Page not found</h1><p>The address does not point to an archive desk.</p><a class="button primary" href="/" data-link>Return to the vault</a></main>`;
 }
 
 function bindGlobalEvents(): void {
