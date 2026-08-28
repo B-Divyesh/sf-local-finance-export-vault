@@ -27,6 +27,13 @@ describe('release response and update policy', () => {
     expect(page).toContain('Built by Param Factory');
   });
 
+  it('keeps the public archive terms consistent', () => {
+    const readme = readFileSync('README.md', 'utf8');
+    expect(readme).toContain('original file and the standard rows');
+    expect(readme).toContain('original files, standard rows, field matches');
+    expect(readme).not.toMatch(/standardised (data|rows)/i);
+  });
+
   it('versions every built worker and checks navigation on the network first', () => {
     const worker = readFileSync('public/sw.js', 'utf8');
     const vite = readFileSync('vite.config.ts', 'utf8');

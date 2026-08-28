@@ -1,4 +1,4 @@
-# Landing copy audit
+# Copy audit
 
 Audited 28 August 2026. Counts treat contractions, hyphenated terms, and
 numbers as one word. No sentence exceeds 22 words. No banned word appears.
@@ -64,3 +64,8 @@ numbers as one word. No sentence exceeds 22 words. No banned word appears.
 | Original-to-standard column choices | field matches |
 | Non-persistent sample environment | demo |
 | Completed immutable archive snapshot | sealed archive |
+
+## README terminology check
+
+The README uses **standard fields** and **standard rows** for the mapped
+output. It does not use “standardised data” or “standardised rows.”

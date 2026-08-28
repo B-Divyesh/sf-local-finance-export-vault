@@ -10,8 +10,8 @@ CSV exports into a migration packet you can keep and inspect on your device.
 - Imports CSV files from YNAB, Monarch, and Actual, plus files with common date and amount columns.
 - Lets you review each source field against the standard fields before saving.
 - Validates dates and amounts and flags possible duplicate rows.
-- Records tamper-check codes for both your original file and the standardised data.
-- Downloads one ZIP with your original files, standardised rows, field matches, and tamper-check codes.
+- Records tamper-check codes for both your original file and the standard rows.
+- Downloads one ZIP with your original files, standard rows, field matches, and tamper-check codes.
 - Encrypts and reopens a migration packet with a password.
 - Optionally encrypts each saved local archive.
 - Keeps sealed archives in this browser.

@@ -1,1 +1,1 @@
-Preserve budget exports and build a checked migration packet on your device.
+Preserve budget exports and build a migration packet on your device.
