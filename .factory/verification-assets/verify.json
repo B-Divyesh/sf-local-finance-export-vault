@@ -1,0 +1,14 @@
+{
+  "url": "https://local-finance-export-vault.sociobot.in",
+  "loadMs": 2256,
+  "errors": [],
+  "a11y": {
+    "title": "Finance Export Vault — preserve budget exports",
+    "lang": "en",
+    "h1": 1,
+    "main": true,
+    "imgsMissingAlt": 0,
+    "buttonsUnlabeled": 0,
+    "textLength": 1771
+  }
+}
