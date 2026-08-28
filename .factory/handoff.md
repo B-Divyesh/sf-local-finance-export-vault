@@ -1,3 +1,28 @@
+# Verification addendum — PASS (2026-08-28 UTC)
+
+Independent QA of candidate `94769ecfc814364943ace93ae1e247d089c6cd1d` at
+<https://local-finance-export-vault.sociobot.in> passed. This replaces the
+earlier failed-candidate outcome for release purposes; the full fresh evidence
+is in [`verification-2.md`](verification-2.md).
+
+- Clean install, all 13 literal claim commands, `npm test` (7 unit/policy and
+  25 Chromium tests), lint/typecheck, and production build passed.
+- Rebuilt index, service worker, JS/CSS, manifest, art, and icons match the
+  live deployment; offline PWA reload, demo isolation, packet contents,
+  local encryption, billing redirect, security headers, mobile/keyboard/Axe,
+  and API rate limiting were independently checked.
+- Result: **PASS — releasable.** No known release defects.
+
+Run the verification baseline with:
+
+```bash
+npm ci
+npm test
+npm run lint
+npm run typecheck
+npm run build
+```
+
 # Repair handoff — Local Finance Export Vault
 
 ## Result
