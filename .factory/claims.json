@@ -1,0 +1,72 @@
+[
+  {
+    "id": "demo-two-exports",
+    "claim": "The demo loads two realistic budget exports.",
+    "where": "demo route and README",
+    "test": "npm test -- --grep @claim:demo-two-exports",
+    "sandbox": "fresh browser context at /demo; assert two named sample archives"
+  },
+  {
+    "id": "local-only",
+    "claim": "Financial rows stay in this browser.",
+    "where": "landing facts and privacy page",
+    "test": "npm test -- --grep @claim:local-only",
+    "sandbox": "fresh browser context at /demo; intercept all requests and inspect IndexedDB"
+  },
+  {
+    "id": "packet-contents",
+    "claim": "The migration packet includes originals, neutral rows, a manifest, hashes, and a field-mapping report.",
+    "where": "packet maker and README",
+    "test": "npm test -- --grep @claim:packet-contents",
+    "sandbox": "demo data; download and inspect the ZIP and manifest"
+  },
+  {
+    "id": "hash-manifest",
+    "claim": "Each archive records SHA-256 hashes for the original and neutral data.",
+    "where": "archive details and README",
+    "test": "npm test -- --grep @claim:hash-manifest",
+    "sandbox": "demo data; inspect two 64-character hashes in one manifest"
+  },
+  {
+    "id": "encrypted-packet",
+    "claim": "A migration packet can be encrypted and reopened with a password.",
+    "where": "packet maker and README",
+    "test": "npm test -- --grep @claim:encrypted-packet",
+    "sandbox": "demo data; download an AES-256-GCM envelope, then reopen it to a ZIP with the password"
+  },
+  {
+    "id": "common-imports",
+    "claim": "The vault imports YNAB, Monarch, Actual, and generic budget CSV shapes.",
+    "where": "how it works and README",
+    "test": "npm test -- --grep @claim:common-imports",
+    "sandbox": "fresh real vault; upload and seal an Actual-shaped CSV while demo covers YNAB and Monarch"
+  },
+  {
+    "id": "validation",
+    "claim": "The vault validates dates and amounts and flags possible duplicate rows.",
+    "where": "README and archive validation panel",
+    "test": "npm test -- --grep @claim:validation",
+    "sandbox": "fresh real vault; upload duplicate rows with invalid dates and inspect both validation notices"
+  },
+  {
+    "id": "browser-persistence",
+    "claim": "Sealed archives stay in IndexedDB after a reload.",
+    "where": "privacy page and README",
+    "test": "npm test -- --grep @claim:browser-persistence",
+    "sandbox": "fresh browser context; seal one CSV, reload, and find the archive"
+  },
+  {
+    "id": "free-tier",
+    "claim": "The free vault stores two archives; a $12 one-time license allows unlimited archives.",
+    "where": "landing facts, paid section, and terms",
+    "test": "npm test -- --grep @claim:free-tier",
+    "sandbox": "fresh browser context; add two drafts, assert free limit, price, and Sociobot checkout route"
+  },
+  {
+    "id": "offline-reload",
+    "claim": "Runs offline after the first visit.",
+    "where": "landing facts and README",
+    "test": "npm test -- --grep @claim:offline-reload",
+    "sandbox": "fresh browser context; load /demo, confirm the installed shell, disable network, and reload"
+  }
+]
