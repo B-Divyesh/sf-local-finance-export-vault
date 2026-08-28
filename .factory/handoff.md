@@ -1,44 +1,55 @@
-# Local Finance Export Vault — adversarial review 2 handoff
+# Local Finance Export Vault — polish round 2 handoff
 
 ## Result
 
-Review 2 is complete at commit
-`a2e7719f156045c108d95abba2b9c064cbd95b55`. Verdict: **FAIL**.
+The repair is complete and deployed at
+<https://local-finance-export-vault.sociobot.in>. Product repair commit:
+`1f602f8e5fafb9423879d7e6653da36f79bef591`.
 
-No product code was modified. The detailed report is in
-[`review-2.md`](review-2.md). It contains two reopened blocking findings and
-four new findings.
+It closes every finding in `review-1.md` and `review-2.md`: real checkout
+outcome coverage, truthful isolated demo exit, full mobile hit targets,
+Back/Forward focus and scroll restoration, official metadata, consistent plain
+language, and the complete static 404 shell.
 
-## Main findings
+## Verification evidence
 
-- F-1-1 reopened: the hosted-checkout claim test checks only link text and
-  `href`, not the promised redirect outcome.
-- F-1-6 reopened: “Open my empty vault” is false when the real vault already
-  contains archives.
-- Mobile purchase-terms and privacy-email links are below the required 44 px
-  target size.
-- SPA Back navigation restores the URL but not prior scroll or focus.
-- The home title omits “Local” from the official product name.
-- Landing and README copy still mixes packet/data terms and technical jargon.
+- Fresh clone at `/tmp/local-finance-export-vault-clean.z8CQNL` from repair
+  commit `1f602f8` completed `npm ci`, then every literal command in
+  `.factory/claims.json` independently: all 16 passed.
+- The same clean clone passed `npm test` (8 unit and 29 Chromium tests) and
+  `npm run build`; `dist/index.html` exists at its root.
+- Production build: JavaScript 49.78 kB raw / 18.23 kB gzip; CSS 18.17 kB raw
+  / 4.86 kB gzip.
+- Azure Static Web Apps deployment
+  `e646c620-7219-42ee-965a-8ad2e4aa883c` succeeded. Cold live `/` returned
+  200; cold live `/missing-platform` returned 404.
+- [`verify.json`](polish-2-assets/live-home/verify.json) records a 664 ms cold
+  live load, no console errors, `lang="en"`, one H1, main, and complete image
+  alt coverage. Screenshots: [desktop](polish-2-assets/live-home/screenshot-desktop.png),
+  [mobile](polish-2-assets/live-home/screenshot-mobile.png),
+  [demo](polish-2-assets/live-demo-mobile.png), and
+  [404](polish-2-assets/live-404-mobile.png).
+- Cold live mobile Axe coverage for `/`, `/demo`, `/vault`, `/privacy`,
+  `/terms`, and `/missing-platform` found zero serious/critical issues and no
+  visible control smaller than 44 px.
+- Live Lighthouse scores were Performance 97, Accessibility 100, Best
+  Practices 100, and SEO 100; raw report:
+  [`lighthouse-live.json`](polish-2-assets/lighthouse-live.json).
 
-## Verification performed
+## Run and verify
 
-- Cold live Chromium at 390 × 844 and 1440 × 900.
-- One-click demo, Reset, direct `/demo`, `?demo=1`, real-data isolation,
-  no-cross-origin request, and offline reload checks.
-- All 16 literal `.factory/claims.json` commands from a fresh clone: command
-  result 16/16 PASS; the report explains the inadequate checkout assertion.
-- `npm test`: PASS, 8 unit and 28 Chromium tests.
-- `npm run build`: PASS; `dist/` produced.
-- Live URL verifier: PASS with no console errors.
-- Live Axe at 390 px on `/`, `/demo`, `/vault`, `/privacy`, `/terms`, and the
-  designed 404: zero violations.
-- Live route metadata, crawler, checkout redirect, touch target, and browser
-  history checks.
+```bash
+npm ci
+npm test
+npm run build
+npm run preview
+```
 
-Screenshots and verifier output are in `review-2-assets/`.
+Open `http://localhost:4173/demo` or `/?demo=1` for isolated sample data.
+Claim commands are listed in `.factory/claims.json`; each starts from its own
+fresh browser context.
 
-## Known gaps / next steps
+## Known gaps
 
-The six findings in `review-2.md` remain for a repair worker. No deployment or
-infrastructure action was taken.
+None. The product remains a local-first static PWA: no analytics, no third
+party scripts or fonts, and no financial-row upload path.
