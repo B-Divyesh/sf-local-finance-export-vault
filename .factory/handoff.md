@@ -40,6 +40,10 @@ at [`polish-1-assets/lighthouse-local.json`](polish-1-assets/lighthouse-local.js
 100 Performance, 100 Accessibility, 100 Best Practices, 100 SEO; LCP 1,804ms,
 CLS 0, TBT 0ms.
 
+Independent clean-clone confirmation: `/tmp/tmp.Z1m2Ufcmzt/vault` cloned pushed
+commit `4ca6d3d27cb9225ccdbab6f2ca12168d1df59b7b`, ran `npm ci` successfully,
+then passed `npm test` (exit `0`) and all 16 literal claim commands (exit `0`).
+
 Build payload: 48.39 kB raw JavaScript (17.87 kB gzip), 18.09 kB raw CSS
 (4.85 kB gzip), and an 84 kB hero WebP.
 

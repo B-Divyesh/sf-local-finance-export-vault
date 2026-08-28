@@ -18,6 +18,7 @@ review commit `cea9a81a3d1c06a44ff827a2825f14bdb495e08b` on 2026-08-28 UTC.
 - Clean install: `npm ci` — pass, 62 packages, 0 vulnerabilities.
 - Full suite: `npm test` — pass: 8 unit tests and 28 Chromium tests (recorded exit status `0`).
 - All 16 literal claim commands in `.factory/claims.json` — pass independently after the clean install.
+- Independent clean clone: `/tmp/tmp.Z1m2Ufcmzt/vault` checked out pushed commit `4ca6d3d27cb9225ccdbab6f2ca12168d1df59b7b`; `npm ci`, `npm test`, and all 16 literal claim commands each exited `0`.
 - `npm run lint`, `npm run typecheck`, and `npm run build` — pass. `dist/index.html` exists.
 - `npx playwright test tests/e2e/accessibility.spec.ts --workers=1` — 6/6 pass; no serious or critical Axe findings, keyboard, focus, mobile overflow, and route checks included.
 - `npx playwright test tests/e2e/regressions.spec.ts --workers=1` — 6/6 pass.
