@@ -1,63 +1,93 @@
-# Local Finance Export Vault — adversarial review 5 handoff
+# Local Finance Export Vault — polish round 5 handoff
 
 ## Result
 
-Review 5 is complete against base commit
-`be8f3a1fc75f8b499c649f7c9ada694543f28121` and the live production site.
-The verdict is **FAIL** with two blocking findings recorded in
-`.factory/review-5.md`.
+All findings from `review-1.md` through `review-5.md` are repaired. The
+application repair is commit `69ee7e1`, pushed to `origin/main` and deployed at
+<https://local-finance-export-vault.sociobot.in> on 29 August 2026 UTC.
 
-No product code was changed. This work order only adds the review and replaces
-this handoff with the current verification record.
+The product keeps its Night Transfer Office visual system and original poster.
+The artifact remains a static, offline PWA with browser-local financial data.
 
-## What was verified
+## What changed
 
-- Fresh cold reads at 390 × 844 and 1440 × 900.
-- One-click demo entry, realistic samples, banner, reset, real-data isolation,
-  same-origin request log, and offline reload.
-- Every sentence, heading, and action on the landing page and every README
-  sentence, including word counts and plain-language flags.
-- Every literal command in `.factory/claims.json`, separately in a fresh clone.
-- Full tests, lint, typecheck, and production build.
-- All earlier review and polish findings in live behavior and current source.
-- Route metadata, true HTTP 404, deep links, Back/Forward focus and scroll,
-  links, mobile targets, Playwright Axe, reduced motion, and visual identity.
-- Byte parity between the clean build and production for the principal shipped
-  artifacts.
+- The first-screen sample action now uses `/?demo=1`, normalizes to `/demo`, and
+  reaches two named sample exports in one click.
+- Demo banner, reset, exit, in-memory data, and real-vault isolation are covered
+  by outcome tests.
+- Valid archives say `Dates and amounts valid`; empty state says `Your saved
+  exports will appear here`. Undefined standalone `checked` copy is gone.
+- `.factory/claims.json` now has 18 claims. New coverage proves password
+  non-retention, independent PBKDF2-SHA-256/AES-256-GCM decryption, and durable
+  archive deletion. The one-click test begins on the landing page.
+- Privacy no longer claims browser-data clearing behavior. Terms no longer
+  claims refunded or disputed licenses stop verifying.
+- Metadata copy now uses `review` instead of an ambiguous `check` result.
+- Playwright can target production with `PLAYWRIGHT_BASE_URL`; its 404 assertion
+  permits only the deliberate document-level 404 network message.
+- Catalog description, demo guide, copy audit, cumulative finding map, and this
+  handoff are current.
 
-## Verification results
+## Exact verification
 
-Fresh clone: `/tmp/lfv-review5.K4NBL7/repo`.
+Fresh clone: `/tmp/lfv-polish5-clean.npZXAp/repo` at `69ee7e1`.
 
 ```bash
 npm ci
-# Every .factory/claims.json test command, run separately
+# Every literal .factory/claims.json test command, run separately
 npm test
 npm run lint
 npm run typecheck
 npm run build
 ```
 
-- `npm ci`: pass, zero vulnerabilities.
-- Claim commands: 16/16 pass.
-- `npm test`: pass, 10 unit and 29 Chromium tests.
-- Lint/typecheck: pass.
-- Build: pass; `dist/index.html` produced.
-- Bundle: 49.71 kB JavaScript raw / 18.16 kB gzip; 18.17 kB CSS raw /
-  4.86 kB gzip.
-- Live Axe: zero violations on `/`, `/demo`, `/vault`, `/privacy`, `/terms`,
-  and the designed 404 at 390 px.
-- Factory URL verifier: pass on the live homepage.
+- Install: pass, zero vulnerabilities.
+- Claim commands: 18/18 pass independently. See
+  [claim results](polish-5-assets/claim-results.txt).
+- Full clean-clone suite: 10 Vitest tests and 33 Chromium tests pass.
+- Lint and typecheck: pass.
+- Build: pass; `dist/index.html` exists.
+- JavaScript: 49.78 kB raw / 18.18 kB gzip. CSS: 18.17 kB raw / 4.86 kB gzip.
+- Local URL verifier: pass, no console errors.
+- Local Lighthouse mobile: Performance 99, Accessibility 100, Best Practices
+  100, SEO 100; LCP 1,905 ms, CLS 0, TBT 21 ms.
 
-## Remaining work
+Production verification:
 
-1. Complete the claims inventory and tagged coverage for the one-click detail,
-   password non-recovery, exact cryptographic parameters, archive removal and
-   browser-data clearing, and refunded/disputed license behavior; or remove the
-   unsupported statements.
-2. Replace “Your checked exports will appear here” and the “CHECKED” archive
-   stamp with exact saved/validation wording.
-3. Rerun all literal claim commands, the full suite/build, and cold live review.
+```bash
+PLAYWRIGHT_BASE_URL=https://local-finance-export-vault.sociobot.in npx playwright test
+```
 
-See `.factory/review-5.md` for exact quotes, proposed rewrites/tests, the copy
-audit, and the earlier-finding matrix.
+- Live browser suite: 33/33 pass. This includes 18 claims, Axe scans of every
+  route and 404, keyboard use, focus/scroll history, 44 px mobile targets,
+  privacy request logs, demo isolation/reset, archive deletion, and offline
+  service-worker reload.
+- `/opt/fleet/lib/verify-url.sh`: pass on the live homepage; exact title,
+  `lang=en`, one H1, main, alt text, named controls, and no console errors.
+- Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices
+  100, SEO 100; LCP 1,501 ms, CLS 0, TBT 0 ms.
+- `/`, `/demo`, `/vault`, `/privacy`, and `/terms`: HTTP 200.
+  `/missing-platform`: HTTP 404 with full site shell and legal links.
+- Live and local `dist/index.html` SHA-256 match:
+  `a0b2653c965f2e66d97f87d789c631b457a76c17b866ab2238ec82b3609921f4`.
+- Checkout returns HTTP 303 to the allow-listed
+  `checkout.dodopayments.com` host.
+
+Evidence is under [polish-5-assets](polish-5-assets/) and the full cumulative
+mapping is [polish-5.md](polish-5.md).
+
+## Deploy
+
+The deployed build was produced with `npm run build` and published with:
+
+```bash
+swa deploy dist --env production --app-name sf-local-finance-export-vault \
+  --resource-group sociobot --no-use-keychain
+```
+
+The CLI-created `.env` credential file was deleted immediately after deploy and
+was never staged or committed.
+
+## Known gaps and next steps
+
+None. No review finding of any severity remains unresolved.

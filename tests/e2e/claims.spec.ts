@@ -1,6 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { strFromU8, unzipSync } from 'fflate';
 
+const appBaseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:4173';
+const appOrigin = new URL(appBaseURL).origin;
+
 test('@claim:demo-two-exports loads two mapped sample exports in one click', async ({ page }) => {
   await page.goto('/');
   const demoLink = page.getByRole('link', { name: 'Try it with sample data' });
@@ -22,7 +25,7 @@ test('@claim:local-only sends no financial rows away', async ({ page }) => {
   const outside: string[] = [];
   page.on('request', (request) => {
     const url = new URL(request.url());
-    if (url.origin !== 'http://127.0.0.1:4173') outside.push(request.url());
+    if (url.origin !== appOrigin) outside.push(request.url());
   });
   await page.goto('/demo');
   await page.getByText('Inspect archive details and field matches').first().click();
@@ -35,7 +38,7 @@ test('@claim:local-only sends no financial rows away', async ({ page }) => {
 test('@claim:license-privacy sends only a license token to the billing API', async ({ page }) => {
   const outside: Array<{ url: string; body: string | null }> = [];
   page.on('request', (request) => {
-    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') outside.push({ url: request.url(), body: request.postData() });
+    if (new URL(request.url()).origin !== appOrigin) outside.push({ url: request.url(), body: request.postData() });
   });
   await page.route('https://api.sociobot.in/api/v1/products/local-finance-export-vault/verify?license=*', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ valid: false, reason: 'invalid' }) });
@@ -232,7 +235,7 @@ test('@claim:free-tier limits free storage to two archives and shows the paid ro
 });
 
 test('@claim:demo-isolation keeps samples in memory and never reads or writes real vault data', async ({ page, browser }) => {
-  const directDemo = await browser.newContext({ baseURL: 'http://127.0.0.1:4173' });
+  const directDemo = await browser.newContext({ baseURL: appBaseURL });
   const directPage = await directDemo.newPage();
   await directPage.goto('/demo');
   const demoDatabases = await directPage.evaluate(async () => (await indexedDB.databases()).map((database) => database.name));
@@ -344,7 +347,7 @@ test('@claim:password-recovery stores no encryption password or recovery path', 
 test('@claim:scope-limits keeps originals unchanged and makes no external request', async ({ page }) => {
   const outside: string[] = [];
   page.on('request', (request) => {
-    if (new URL(request.url()).origin !== 'http://127.0.0.1:4173') outside.push(request.url());
+    if (new URL(request.url()).origin !== appOrigin) outside.push(request.url());
   });
   const original = 'Date,Payee,Amount\n2026-08-01,North Market,-42.10\n';
   await page.goto('/vault');

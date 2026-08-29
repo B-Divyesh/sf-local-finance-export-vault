@@ -1,0 +1,19 @@
+Checked 2026-08-29 UTC after production deployment.
+
+/                        200
+/demo                    200
+/vault                   200
+/privacy                 200
+/terms                   200
+/missing-platform        404
+/manifest.webmanifest    200
+/robots.txt              200
+/sitemap.xml             200
+
+Production index SHA-256: a0b2653c965f2e66d97f87d789c631b457a76c17b866ab2238ec82b3609921f4
+Local dist/index.html SHA-256: a0b2653c965f2e66d97f87d789c631b457a76c17b866ab2238ec82b3609921f4
+Live app assets: index-BvKmY2KZ.js and index-Bh6Cqwyd.css
+Checkout: HTTP 303 to checkout.dodopayments.com
+Live Playwright: 33/33 passed against https://local-finance-export-vault.sociobot.in
+Live URL verifier: PASS, no console errors, title/lang/one H1/main/alt/named controls present
+Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices 100, SEO 100; LCP 1,501 ms, CLS 0, TBT 0 ms

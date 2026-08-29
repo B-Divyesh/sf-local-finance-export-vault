@@ -1,0 +1,26 @@
+Clean clone: /tmp/lfv-polish5-clean.npZXAp/repo
+Commit: 69ee7e1
+Install: npm ci — PASS, 0 vulnerabilities
+
+demo-two-exports: PASS
+local-only: PASS
+license-privacy: PASS
+packet-contents: PASS
+hash-manifest: PASS
+encrypted-packet: PASS
+common-imports: PASS
+field-review: PASS
+validation: PASS
+browser-persistence: PASS
+encrypted-local: PASS
+demo-isolation: PASS
+archive-removal: PASS
+password-recovery: PASS
+scope-limits: PASS
+free-tier: PASS
+billing-checkout: PASS
+offline-reload: PASS
+
+Each result above came from running its literal `.factory/claims.json` `test`
+command separately. The full clean-clone suite then passed: 10 Vitest tests and
+33 Chromium tests. Lint, typecheck, and build passed; `dist/index.html` exists.

@@ -23,10 +23,12 @@ test('routes update title and focus without console errors', async ({ page }) =>
   await expect(page.locator('h1')).toBeFocused();
   await page.goBack();
   await expect(page).toHaveTitle('Local Finance Export Vault — preserve budget exports');
+  expect(errors).toEqual([]);
+  errors.length = 0;
   await page.goto('/missing-platform');
   await expect(page).toHaveTitle('Not found — Local Finance Export Vault');
   await expect(page.getByRole('link', { name: 'Return to the vault' })).toBeVisible();
-  expect(errors).toEqual([]);
+  expect(errors.filter((message) => !/Failed to load resource: the server responded with a status of 404/.test(message))).toEqual([]);
 });
 
 test('supports keyboard-only import, encryption, and locked archive access at 390px', async ({ page }) => {
