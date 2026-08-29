@@ -1,14 +1,15 @@
 # Demo sandbox
 
-- URL: `https://local-finance-export-vault.sociobot.in/demo`
-- Local URL: `http://localhost:5173/demo`
-- Direct query alias: `/?demo=1` (it immediately normalizes to `/demo`)
+- URL: `https://local-finance-export-vault.sociobot.in/?demo=1`
+- Local URL: `http://localhost:5173/?demo=1`
+- Canonical demo route: `/demo` (the query URL immediately normalizes here)
 
 The demo loads `household-ynab.csv` with four household rows and
 `travel-monarch.csv` with four travel rows. Both are bundled strings generated
 for this product. They include categories, accounts, notes, and cleared states.
 
-Demo data lives only in module memory. Each entry to the demo replaces the
+The first-screen **Try it with sample data** action reaches the demo in one
+click. Demo data lives only in module memory. Each entry replaces the
 working state with fresh samples. It never opens or writes the real
 `local-finance-export-vault` IndexedDB database. Reloading or choosing **Reset
 demo** recreates the same samples. **Open my vault** discards the sample state

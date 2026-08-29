@@ -37,7 +37,7 @@ const routeTitles: Record<string, string> = {
   '/404': 'Not found — Local Finance Export Vault'
 };
 const routeDescriptions: Record<string, string> = {
-  '/': 'Preserve budget exports, check their fields, and make a migration packet without uploading financial rows.',
+  '/': 'Preserve budget exports, review their fields, and make a migration packet without uploading financial rows.',
   '/demo': 'Try two realistic budget exports in an isolated sample vault.',
   '/vault': 'Import budget CSV files and make a local migration packet.',
   '/privacy': 'Learn what Local Finance Export Vault stores and what stays on your device.',
@@ -148,7 +148,7 @@ function homePage(): string {
         <p class="eyebrow">Local budget export archive</p>
         <h1 id="home-title" data-history-focus="page-title" tabindex="-1">Preserve your budget exports before you switch</h1>
         <p class="lede">For people changing budget apps who want to inspect and keep their exports.</p>
-        <div class="hero-action"><a class="button primary" href="/demo" data-link>Try it with sample data</a><span>Loads two realistic exports in a separate demo.</span></div>
+        <div class="hero-action"><a class="button primary" href="/?demo=1" data-link>Try it with sample data</a><span>Loads two realistic exports in a separate demo.</span></div>
         <ul class="plain-facts" aria-label="Product facts">
           <li><span aria-hidden="true">●</span> Runs offline after the first visit.</li>
           <li><span aria-hidden="true">●</span> Financial rows stay in this browser.</li>
@@ -199,7 +199,7 @@ function workspace(): string {
     <div class="workspace-toolbar">
       <div>
         <p class="toolbar-title">${archives.length ? `${archives.length} sealed archive${archives.length === 1 ? '' : 's'}` : 'No sealed archives yet'}</p>
-        <p class="toolbar-note">${archives.length ? 'Select archives for one migration packet.' : 'Your checked exports will appear here.'}</p>
+        <p class="toolbar-note">${archives.length ? 'Select archives for one migration packet.' : 'Your saved exports will appear here.'}</p>
       </div>
       ${isDemo() ? '' : `<label class="button ${limitReached ? 'disabled' : 'primary'}" for="csv-files">${limitReached ? 'Free limit reached' : 'Choose CSV files'}</label><input id="csv-files" type="file" accept=".csv,text/csv" multiple ${limitReached ? 'disabled' : ''}>`}
     </div>
@@ -246,7 +246,7 @@ function archiveCard(archive: VaultArchive, index: number): string {
       <label class="packet-check"><input type="checkbox" name="archive" value="${escapeAttr(archive.id)}" checked><span class="sr-only">Include ${escapeHtml(archive.name)} in packet</span></label>
       <span class="archive-index">${String(index + 1).padStart(2, '0')}</span>
       <div><h3 tabindex="-1">${escapeHtml(archive.name)}</h3><p>${escapeHtml(archive.manifest.sourceProfile)} · ${archive.rows.length} rows · schema ${archive.manifest.schemaVersion}${encryptedThisSession.has(archive.id) ? ' · encrypted on this device' : ''}</p></div>
-      <span class="stamp ${valid ? 'valid' : 'warning'}">${valid ? 'Checked' : `${validation.invalidRows} to review`}</span>
+      <span class="stamp ${valid ? 'valid' : 'warning'}">${valid ? 'Dates and amounts valid' : `${validation.invalidRows} to review`}</span>
     </div>
     <details>
       <summary>Inspect archive details and field matches</summary>
@@ -304,11 +304,11 @@ function paidSection(): string {
 }
 
 function privacyPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">The short version</p><h1 id="privacy-title" data-history-focus="page-title" tabindex="-1">Your financial rows stay on your device</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the vault stores</h2><p>Your exports, field matches, tamper-check codes, and standard rows are stored in this browser.</p><p>You can encrypt each saved archive with a password. Its file name and financial rows then remain encrypted in browser storage.</p><p>Demo data stays in memory and is discarded when you leave or reset the demo.</p></section><section><h2>What leaves the device</h2><p>Archive data is not sent to us. The tested app contains no analytics, ads, bank connection, or tracking script.</p><p>If you verify a paid license, only the license token goes to the Sociobot billing API. Financial rows are never included.</p></section><section><h2>Your controls</h2><p>You can download each migration packet and remove saved archives. Clearing this site's browser data also removes them.</p></section><section><h2>Contact</h2><p>For privacy questions, email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">The short version</p><h1 id="privacy-title" data-history-focus="page-title" tabindex="-1">Your financial rows stay on your device</h1><p class="updated">Effective 29 August 2026</p><section><h2>What the vault stores</h2><p>Your exports, field matches, tamper-check codes, and standard rows are stored in this browser.</p><p>You can encrypt each saved archive with a password. Its file name and financial rows then remain encrypted in browser storage.</p><p>Demo data stays in memory and is discarded when you leave or reset the demo.</p></section><section><h2>What leaves the device</h2><p>Archive data is not sent to us. The tested app contains no analytics, ads, bank connection, or tracking script.</p><p>If you verify a paid license, only the license token goes to the Sociobot billing API. Financial rows are never included.</p></section><section><h2>Your controls</h2><p>You can download each migration packet and remove saved archives.</p></section><section><h2>Contact</h2><p>For privacy questions, email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a>.</p></section></main>`;
 }
 
 function termsPage(): string {
-  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 id="terms-title" data-history-focus="page-title" tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 28 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into standard fields. It also records tamper-check codes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field matches and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. The Buy unlimited archives link opens Sociobot's hosted checkout.</p><p>For payment and refund terms, use the terms shown at checkout. A refunded or disputed license may stop verifying.</p><p>The free vault still stores two archives and makes migration packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
+  return `<main id="main" class="reading-page"><p class="eyebrow">Use terms</p><h1 id="terms-title" data-history-focus="page-title" tabindex="-1">Use the vault as a portability record</h1><p class="updated">Effective 29 August 2026</p><section><h2>What the tool provides</h2><p>The vault maps budget exports into standard fields. It also records tamper-check codes and validation notices.</p><p>It is not accounting, tax, legal, or financial advice. It does not certify that a vendor export is complete.</p></section><section><h2>Your responsibility</h2><p>Check the field matches and keep a second backup. You are responsible for remembering encryption passwords.</p></section><section><h2>Purchase terms</h2><p>The $12 license is a one-time purchase for unlimited archives. The Buy unlimited archives link opens Sociobot's hosted checkout.</p><p>For payment and refund terms, use the terms shown at checkout.</p><p>The free vault still stores two archives and makes migration packets.</p></section><section><h2>Warranty</h2><p>The software is provided as available under the MIT License, without a warranty of correctness or fitness.</p></section></main>`;
 }
 
 function notFoundPage(): string {
@@ -333,7 +333,7 @@ function bindPageEvents(): void {
   document.querySelectorAll<HTMLAnchorElement>('a[data-link]').forEach((link) => link.addEventListener('click', (event) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    navigate(link.pathname);
+    navigate(`${link.pathname}${link.search}${link.hash}`);
   }));
   document.querySelector<HTMLInputElement>('#csv-files')?.addEventListener('change', onFiles);
   document.querySelectorAll<HTMLSelectElement>('select[data-draft]').forEach((select) => select.addEventListener('change', () => {
@@ -509,8 +509,12 @@ async function openEncryptedPacket(): Promise<void> {
 }
 
 function navigate(path: string): void {
+  const destination = new URL(path, location.origin);
+  const normalizedPath = destination.pathname === '/' && destination.searchParams.get('demo') === '1'
+    ? '/demo'
+    : `${destination.pathname}${destination.search}${destination.hash}`;
   saveCurrentView();
-  history.pushState({ view: { scrollX: 0, scrollY: 0, focusKey: null } } satisfies RouteState, '', path);
+  history.pushState({ view: { scrollX: 0, scrollY: 0, focusKey: null } } satisfies RouteState, '', normalizedPath);
   void routeChanged(false);
 }
 

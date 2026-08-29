@@ -1,6 +1,6 @@
 # Copy audit
 
-Audited 28 August 2026 after polish round 4. Counts treat contractions,
+Audited 29 August 2026 after polish round 5. Counts treat contractions,
 hyphenated terms, prices, and versions as one word. The landing page has no
 sentence over 22 words, no banned marketing words, no metaphor-led label, and
 no qualitative promise outside the claim inventory.
@@ -14,7 +14,7 @@ no qualitative promise outside the claim inventory.
 | Local budget export archive | 4 | Literal eyebrow |
 | Preserve your budget exports before you switch | 7 | H1 |
 | For people changing budget apps who want to inspect and keep their exports. | 13 | Audience and outcome |
-| Try it with sample data | 5 | Primary action |
+| Try it with sample data | 5 | Primary action; `demo-two-exports` |
 | Loads two realistic exports in a separate demo. | 8 | `demo-two-exports` |
 | Runs offline after the first visit. | 6 | `offline-reload` |
 | Financial rows stay in this browser. | 6 | `local-only` |
@@ -24,10 +24,12 @@ no qualitative promise outside the claim inventory.
 | Start your archive | 3 | Workspace heading |
 | Choose a budget CSV. Review each field before you save it. | 11 | `field-review` |
 | No sealed archives yet | 4 | Empty state status |
-| Your checked exports will appear here. | 6 | Archive status |
+| Your saved exports will appear here. | 6 | Saved-state description |
 | Choose CSV files | 3 | File action |
 | No archives yet | 3 | Empty state heading |
 | Choose a CSV to start its field review. | 8 | Empty state instruction |
+| Dates and amounts valid | 4 | Exact `validation` result |
+| N rows to review | 4 | Exact `validation` result |
 | Three steps | 2 | Process label |
 | How to make a migration packet | 6 | Process heading |
 | Choose exports | 2 | Step heading |
@@ -56,11 +58,17 @@ no qualitative promise outside the claim inventory.
 
 ## README audit
 
-The README summary now reads: “Preserve budget exports and make a migration
-packet on your device.” The price description names the exact packet contents
-instead of promising an undefined “complete” result. Its new **Deploy** section
-states that `npm run build` produces `dist/` and that the configured static host
-publishes it with `staticwebapp.config.json` route, 404, cache, and header rules.
+The README summary reads: “Preserve budget exports and make a migration packet
+on your device.” The demo paragraph names both the one-click first-screen action
+and its direct `/?demo=1` URL. The price description names the exact packet
+contents instead of promising an undefined “complete” result. The encryption
+warning is covered by `password-recovery`, and the quantitative algorithm
+sentence is covered by the independently decrypted `encrypted-packet` test.
+The **Deploy** section states that `npm run build` produces `dist/` and that the
+configured static host publishes it with the route, 404, cache, and header rules.
+
+No README sentence is over 22 words. It contains none of the banned marketing
+words. Public-facing terms remain consistent with the table below.
 
 ## Terminology
 

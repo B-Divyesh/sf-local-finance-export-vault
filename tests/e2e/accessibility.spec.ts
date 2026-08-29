@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-for (const route of ['/', '/demo', '/privacy', '/terms']) {
+for (const route of ['/', '/demo', '/vault', '/privacy', '/terms', '/missing-platform']) {
   test(`has no serious accessibility issues on ${route}`, async ({ page }) => {
     if (route === '/demo') await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(route);

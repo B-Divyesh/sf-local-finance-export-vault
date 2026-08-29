@@ -1,10 +1,10 @@
 [
   {
     "id": "demo-two-exports",
-    "claim": "The demo loads two realistic budget exports.",
-    "where": "demo route and README",
+    "claim": "One click from the first screen loads two realistic budget exports in the isolated demo.",
+    "where": "landing first screen, demo route, demo guide, and README",
     "test": "npm test -- --grep @claim:demo-two-exports",
-    "sandbox": "fresh browser context at /demo; assert two named sample archives"
+    "sandbox": "fresh browser context at /; assert the action targets ?demo=1, click it once, assert /demo, banner, two named samples, and reset behavior"
   },
   {
     "id": "local-only",
@@ -36,10 +36,10 @@
   },
   {
     "id": "encrypted-packet",
-    "claim": "A migration packet can be encrypted and reopened with a password.",
+    "claim": "Encrypted migration packets use PBKDF2 with SHA-256 and 250,000 iterations, then AES-256-GCM, and reopen with the password.",
     "where": "packet maker and README",
     "test": "npm test -- --grep @claim:encrypted-packet",
-    "sandbox": "demo data; download an AES-256-GCM envelope, then reopen it to a ZIP with the password"
+    "sandbox": "demo data; download an envelope, independently derive its key with PBKDF2-SHA-256 at 250,000 iterations, decrypt with AES-256-GCM, inspect the ZIP, then reopen it through the UI"
   },
   {
     "id": "common-imports",
@@ -78,10 +78,24 @@
   },
   {
     "id": "demo-isolation",
-    "claim": "The demo never reads or writes real vault archives.",
+    "claim": "Demo rows stay in memory; the demo never reads or writes real vault archives.",
     "where": "demo route, demo banner, demo guide, privacy page, and README",
     "test": "npm test -- --grep @claim:demo-isolation",
-    "sandbox": "fresh context; save a named real archive, enter and leave demo twice, and assert the real archive never appears under the demo banner"
+    "sandbox": "fresh direct demo context; assert no vault IndexedDB exists, then save a named real archive in another context, enter and leave demo twice, and assert the real archive never appears under the demo banner"
+  },
+  {
+    "id": "archive-removal",
+    "claim": "You can remove a saved archive from browser storage.",
+    "where": "archive controls and privacy page",
+    "test": "npm test -- --grep @claim:archive-removal",
+    "sandbox": "fresh real vault; save an archive, remove it through the confirmed UI, reload, and assert both the page and IndexedDB no longer contain it"
+  },
+  {
+    "id": "password-recovery",
+    "claim": "Encryption passwords are not stored and cannot be recovered.",
+    "where": "both encryption password help texts and README",
+    "test": "npm test -- --grep @claim:password-recovery",
+    "sandbox": "fresh browser context; encrypt a packet and a saved archive with unique passwords, inspect downloads, requests, IndexedDB, localStorage, sessionStorage, and cookies, reload, and assert no recovery action exists"
   },
   {
     "id": "scope-limits",

@@ -17,8 +17,9 @@ CSV exports into a migration packet you can keep and inspect on your device.
 - Keeps sealed archives in this browser.
 - Runs offline after the first visit.
 
-The demo at [`/demo`](https://local-finance-export-vault.sociobot.in/demo)
-loads two realistic exports in one click. Demo rows stay in memory and are not
+Choose **Try it with sample data** once, or open
+[`/?demo=1`](https://local-finance-export-vault.sociobot.in/?demo=1). Both load
+two realistic exports in a separate demo. Demo rows stay in memory and are not
 written to the real vault.
 
 This tool does not connect to banks or change your original CSV files. It is a

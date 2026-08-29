@@ -1,12 +1,21 @@
 import { test, expect } from '@playwright/test';
 import { strFromU8, unzipSync } from 'fflate';
 
-test('@claim:demo-two-exports loads two mapped sample exports', async ({ page }) => {
-  await page.goto('/demo');
+test('@claim:demo-two-exports loads two mapped sample exports in one click', async ({ page }) => {
+  await page.goto('/');
+  const demoLink = page.getByRole('link', { name: 'Try it with sample data' });
+  await expect(demoLink).toHaveAttribute('href', '/?demo=1');
+  await demoLink.click();
+  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page.getByLabel('Demo mode')).toContainText('Demo — sample data, nothing is saved');
   await expect(page.getByRole('heading', { name: 'Review two sample budget exports' })).toBeVisible();
   await expect(page.locator('.archive-card')).toHaveCount(2);
   await expect(page.getByText('household-ynab.csv', { exact: true })).toBeVisible();
   await expect(page.getByText('travel-monarch.csv', { exact: true })).toBeVisible();
+  await page.locator('input[name="archive"]').first().uncheck();
+  await expect(page.locator('input[name="archive"]:checked')).toHaveCount(1);
+  await page.getByRole('button', { name: 'Reset demo' }).click();
+  await expect(page.locator('input[name="archive"]:checked')).toHaveCount(2);
 });
 
 test('@claim:local-only sends no financial rows away', async ({ page }) => {
@@ -91,6 +100,37 @@ test('@claim:encrypted-packet encrypts a packet with a password', async ({ page 
   expect(envelope.cipher).toBe('AES-256-GCM');
   expect(envelope.keyDerivation).toBe('PBKDF2-SHA256-250000');
   expect(envelope.data).not.toContain('North Market');
+  const independentlyDecrypted = await page.evaluate(async ({ encryptedEnvelope, password }) => {
+    const bytes = (value: string) => Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+    const material = await crypto.subtle.importKey(
+      'raw',
+      new TextEncoder().encode(password),
+      'PBKDF2',
+      false,
+      ['deriveKey']
+    );
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: bytes(encryptedEnvelope.salt),
+        iterations: 250_000,
+        hash: 'SHA-256'
+      },
+      material,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['decrypt']
+    );
+    const clear = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: bytes(encryptedEnvelope.iv) },
+      key,
+      bytes(encryptedEnvelope.data)
+    );
+    return Array.from(new Uint8Array(clear));
+  }, { encryptedEnvelope: envelope, password: 'correct horse battery staple' });
+  const independentlyOpenedFiles = unzipSync(new Uint8Array(independentlyDecrypted));
+  expect(Object.keys(independentlyOpenedFiles)).toContain('manifest.json');
+  expect(strFromU8(independentlyOpenedFiles['normalized-transactions.csv'])).toContain('North Market');
   await page.getByText('Open an encrypted packet').click();
   await page.locator('#encrypted-file').setInputFiles({ name: 'packet.vault', mimeType: 'application/octet-stream', buffer: encrypted });
   await page.getByLabel('Packet password').fill('correct horse battery staple');
@@ -191,7 +231,14 @@ test('@claim:free-tier limits free storage to two archives and shows the paid ro
   await expect(page.getByText('3 sealed archives')).toBeVisible();
 });
 
-test('@claim:demo-isolation never reads or writes real vault data', async ({ page }) => {
+test('@claim:demo-isolation keeps samples in memory and never reads or writes real vault data', async ({ page, browser }) => {
+  const directDemo = await browser.newContext({ baseURL: 'http://127.0.0.1:4173' });
+  const directPage = await directDemo.newPage();
+  await directPage.goto('/demo');
+  const demoDatabases = await directPage.evaluate(async () => (await indexedDB.databases()).map((database) => database.name));
+  expect(demoDatabases).not.toContain('local-finance-export-vault');
+  await directDemo.close();
+
   await page.goto('/vault');
   await page.locator('#csv-files').setInputFiles({
     name: 'private-medical-budget.csv', mimeType: 'text/csv',
@@ -207,6 +254,91 @@ test('@claim:demo-isolation never reads or writes real vault data', async ({ pag
   await page.getByRole('link', { name: 'Demo' }).click();
   await expect(page.getByText('private-medical-budget.csv', { exact: true })).toHaveCount(0);
   await expect(page.locator('.archive-card')).toHaveCount(2);
+});
+
+test('@claim:archive-removal removes a saved archive from browser storage', async ({ page }) => {
+  await page.goto('/vault');
+  await page.locator('#csv-files').setInputFiles({
+    name: 'remove-me.csv', mimeType: 'text/csv',
+    buffer: Buffer.from('Date,Payee,Amount\n2026-08-01,Corner Shop,-12.40')
+  });
+  await page.getByRole('button', { name: 'Seal archive' }).click();
+  await page.getByText('Inspect archive details and field matches').click();
+  page.once('dialog', (dialog) => dialog.accept());
+  await page.getByRole('button', { name: 'Remove this archive' }).click();
+  await expect(page.getByText('remove-me.csv', { exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText('remove-me.csv', { exact: true })).toHaveCount(0);
+  const storedArchives = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('local-finance-export-vault');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    return await new Promise<unknown[]>((resolve, reject) => {
+      const request = database.transaction('archives').objectStore('archives').getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  });
+  expect(storedArchives).toEqual([]);
+});
+
+test('@claim:password-recovery stores no encryption password or recovery path', async ({ page }) => {
+  const packetPassword = 'packet-only-Secret-48291';
+  const archivePassword = 'archive-only-Secret-73510';
+  const requests: Array<{ url: string; body: string | null }> = [];
+  page.on('request', (request) => requests.push({ url: request.url(), body: request.postData() }));
+
+  await page.goto('/demo');
+  await page.getByLabel('Encrypt with a password').check();
+  await page.getByLabel('Archive password').fill(packetPassword);
+  await expect(page.locator('#password-help')).toContainText('password cannot be recovered');
+  const encryptedDownload = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Download migration packet' }).click();
+  const packet = await encryptedDownload;
+  const packetStream = await packet.createReadStream();
+  const packetChunks: Buffer[] = [];
+  for await (const chunk of packetStream) packetChunks.push(Buffer.from(chunk));
+  expect(Buffer.concat(packetChunks).toString('utf8')).not.toContain(packetPassword);
+
+  await page.goto('/vault');
+  await page.locator('#csv-files').setInputFiles({
+    name: 'password-private.csv', mimeType: 'text/csv',
+    buffer: Buffer.from('Date,Payee,Amount\n2026-08-01,Private Clinic,-150')
+  });
+  await page.getByLabel('Encrypt this saved archive').check();
+  await page.getByLabel('Local archive password').fill(archivePassword);
+  await expect(page.locator('[id^="local-password-help-"]')).toContainText('cannot be recovered');
+  await page.getByRole('button', { name: 'Seal archive' }).click();
+  await expect(page.getByText('password-private.csv', { exact: true })).toBeVisible();
+  await expect(page.getByText(/encrypted on this device/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Encrypted saved archive' })).toBeVisible();
+
+  const browserStorage = await page.evaluate(async () => {
+    const database = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open('local-finance-export-vault');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    const indexedDbRecords = await new Promise<unknown[]>((resolve, reject) => {
+      const request = database.transaction('archives').objectStore('archives').getAll();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    return {
+      indexedDbRecords,
+      localStorage: { ...localStorage },
+      sessionStorage: { ...sessionStorage },
+      cookies: document.cookie
+    };
+  });
+  const retainedData = JSON.stringify({ browserStorage, requests });
+  expect(retainedData).not.toContain(packetPassword);
+  expect(retainedData).not.toContain(archivePassword);
+  const recoveryActions = await page.locator('a, button').allTextContents();
+  expect(recoveryActions.join(' ')).not.toMatch(/recover password|reset password|forgot password/i);
 });
 
 test('@claim:scope-limits keeps originals unchanged and makes no external request', async ({ page }) => {

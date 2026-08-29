@@ -43,6 +43,10 @@ describe('release response and update policy', () => {
       expect(text).not.toMatch(/checked archive they can understand later|clear migration packet|complete migration packets/i);
       expect(text).not.toMatch(/transfer desk|platform 01|route map|how your files move|archive desk|final stop|no service here/i);
     }
+    expect(source).not.toMatch(/Your checked exports|>Checked</i);
+    expect(source).toContain('Your saved exports will appear here.');
+    expect(source).toContain('Dates and amounts valid');
+    expect(source).not.toMatch(/refunded or disputed license|Clearing this site&apos;s browser data also removes them/i);
     expect(source).toContain('For people changing budget apps who want to inspect and keep their exports.');
     expect(source).toContain('The free vault stores two archives and makes migration packets with original files, standard rows, field matches, and tamper-check codes.');
     expect(static404).toContain('This page does not exist.');
