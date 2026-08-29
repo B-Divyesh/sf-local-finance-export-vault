@@ -1,93 +1,51 @@
-# Local Finance Export Vault — polish round 5 handoff
+# Local Finance Export Vault — review 6 handoff
 
 ## Result
 
-All findings from `review-1.md` through `review-5.md` are repaired. The
-application repair is commit `69ee7e1`, pushed to `origin/main` and deployed at
-<https://local-finance-export-vault.sociobot.in> on 29 August 2026 UTC.
+Review 6 made no application-code changes. It reviewed repository commit
+`d5fb44fe559f2463218a3e007579202e94deace1` and the deployed product at
+<https://local-finance-export-vault.sociobot.in>. The review result is
+**PASS**: no finding of any severity remains.
 
-The product keeps its Night Transfer Office visual system and original poster.
-The artifact remains a static, offline PWA with browser-local financial data.
+The product remains a static, offline PWA with browser-local financial data,
+the original Night Transfer Office visual system, and no runtime third-party
+font, analytics, or tracking dependency.
 
-## What changed
+## What was done
 
-- The first-screen sample action now uses `/?demo=1`, normalizes to `/demo`, and
-  reaches two named sample exports in one click.
-- Demo banner, reset, exit, in-memory data, and real-vault isolation are covered
-  by outcome tests.
-- Valid archives say `Dates and amounts valid`; empty state says `Your saved
-  exports will appear here`. Undefined standalone `checked` copy is gone.
-- `.factory/claims.json` now has 18 claims. New coverage proves password
-  non-retention, independent PBKDF2-SHA-256/AES-256-GCM decryption, and durable
-  archive deletion. The one-click test begins on the landing page.
-- Privacy no longer claims browser-data clearing behavior. Terms no longer
-  claims refunded or disputed licenses stop verifying.
-- Metadata copy now uses `review` instead of an ambiguous `check` result.
-- Playwright can target production with `PLAYWRIGHT_BASE_URL`; its 404 assertion
-  permits only the deliberate document-level 404 network message.
-- Catalog description, demo guide, copy audit, cumulative finding map, and this
-  handoff are current.
+- Ran a fresh, unscrolled first-read check at 390 × 844 and 1440 × 900.
+- Audited every landing and README sentence, claims, demo isolation, privacy
+  requests, routing, links, metadata, historic findings, and missed leverage.
+- Ran clean-clone quality and claim checks and production browser checks.
+- Wrote `.factory/review-6.md` and this handoff. No product source, asset,
+  deployment, or configuration file changed.
 
-## Exact verification
+## Verification
 
-Fresh clone: `/tmp/lfv-polish5-clean.npZXAp/repo` at `69ee7e1`.
+Fresh clone: `/tmp/lfv-review6.DMXKjn/repo` at the reviewed commit.
 
 ```bash
 npm ci
-# Every literal .factory/claims.json test command, run separately
+# each literal command in .factory/claims.json, separately
 npm test
 npm run lint
 npm run typecheck
 npm run build
-```
-
-- Install: pass, zero vulnerabilities.
-- Claim commands: 18/18 pass independently. See
-  [claim results](polish-5-assets/claim-results.txt).
-- Full clean-clone suite: 10 Vitest tests and 33 Chromium tests pass.
-- Lint and typecheck: pass.
-- Build: pass; `dist/index.html` exists.
-- JavaScript: 49.78 kB raw / 18.18 kB gzip. CSS: 18.17 kB raw / 4.86 kB gzip.
-- Local URL verifier: pass, no console errors.
-- Local Lighthouse mobile: Performance 99, Accessibility 100, Best Practices
-  100, SEO 100; LCP 1,905 ms, CLS 0, TBT 21 ms.
-
-Production verification:
-
-```bash
 PLAYWRIGHT_BASE_URL=https://local-finance-export-vault.sociobot.in npx playwright test
 ```
 
-- Live browser suite: 33/33 pass. This includes 18 claims, Axe scans of every
-  route and 404, keyboard use, focus/scroll history, 44 px mobile targets,
-  privacy request logs, demo isolation/reset, archive deletion, and offline
-  service-worker reload.
-- `/opt/fleet/lib/verify-url.sh`: pass on the live homepage; exact title,
-  `lang=en`, one H1, main, alt text, named controls, and no console errors.
-- Live Lighthouse mobile: Performance 100, Accessibility 100, Best Practices
-  100, SEO 100; LCP 1,501 ms, CLS 0, TBT 0 ms.
-- `/`, `/demo`, `/vault`, `/privacy`, and `/terms`: HTTP 200.
-  `/missing-platform`: HTTP 404 with full site shell and legal links.
-- Live and local `dist/index.html` SHA-256 match:
+- `npm ci`: pass, zero vulnerabilities.
+- All 18 literal claim commands: pass independently.
+- `npm test`: pass, 10 Vitest tests and 33 Chromium tests.
+- `npm run lint`, `npm run typecheck`, and `npm run build`: pass; `dist/` is
+  produced.
+- Production Playwright suite: pass, 33/33.
+- `/`, `/demo`, `/vault`, `/privacy`, and `/terms`: HTTP 200. The designed
+  missing route: HTTP 404. Checkout: HTTP 303 to hosted Dodo checkout.
+- The local `dist/index.html` and live homepage have matching SHA-256:
   `a0b2653c965f2e66d97f87d789c631b457a76c17b866ab2238ec82b3609921f4`.
-- Checkout returns HTTP 303 to the allow-listed
-  `checkout.dodopayments.com` host.
-
-Evidence is under [polish-5-assets](polish-5-assets/) and the full cumulative
-mapping is [polish-5.md](polish-5.md).
-
-## Deploy
-
-The deployed build was produced with `npm run build` and published with:
-
-```bash
-swa deploy dist --env production --app-name sf-local-finance-export-vault \
-  --resource-group sociobot --no-use-keychain
-```
-
-The CLI-created `.env` credential file was deleted immediately after deploy and
-was never staged or committed.
 
 ## Known gaps and next steps
 
-None. No review finding of any severity remains unresolved.
+None. Continue the documented claim and production-browser checks before each
+release so later copy, billing, or service-worker changes retain this result.
